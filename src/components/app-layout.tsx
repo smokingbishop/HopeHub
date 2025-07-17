@@ -24,6 +24,7 @@ import {
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,10 +34,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/events', label: 'Events', icon: Calendar },
     { href: '/messages', label: 'Messages', icon: MessageSquare },
     { href: '/members', label: 'Members', icon: Users },
-    { href: '/settings', label: 'Settings', icon: Settings },
   ];
+  
+  const settingsNavItem = { href: '/settings', label: 'Settings', icon: Settings };
 
-  const pageTitle = navItems.find((item) => item.href === pathname)?.label;
+
+  const pageTitle = [...navItems, settingsNavItem].find((item) => item.href === pathname)?.label;
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -76,6 +79,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   {item.label}
                 </Link>
               ))}
+               <Link
+                  key={settingsNavItem.href}
+                  href={settingsNavItem.href}
+                  className={cn(
+                    'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
+                    pathname === settingsNavItem.href && 'text-foreground'
+                  )}
+                >
+                  <settingsNavItem.icon className="h-5 w-5" />
+                  {settingsNavItem.label}
+                </Link>
             </nav>
           </SheetContent>
         </Sheet>
@@ -104,6 +118,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </nav>
 
           <div className="ml-auto flex items-center gap-4">
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                         <Button asChild variant="ghost" size="icon" className={cn('h-9 w-9', pathname === settingsNavItem.href ? 'text-foreground bg-accent' : 'text-muted-foreground')}>
+                            <Link href={settingsNavItem.href}>
+                                <Settings className="h-5 w-5" />
+                                <span className="sr-only">{settingsNavItem.label}</span>
+                            </Link>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{settingsNavItem.label}</p>
+                    </TooltipContent>
+                </Tooltip>
+             </TooltipProvider>
+
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="h-8 w-8">
