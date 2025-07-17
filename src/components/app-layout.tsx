@@ -18,7 +18,6 @@ import {
   Home,
   Calendar,
   Users,
-  BrainCircuit,
   Settings,
   Bell,
   PanelLeft,
@@ -39,11 +38,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Home },
     { href: '/events', label: 'Events', icon: Calendar },
-    {
-      href: '/community-insights',
-      label: 'Community Insights',
-      icon: BrainCircuit,
-    },
     { href: '/members', label: 'Members', icon: Users },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
