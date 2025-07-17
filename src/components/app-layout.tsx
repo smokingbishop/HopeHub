@@ -21,6 +21,7 @@ import {
   Settings,
   Bell,
   PanelLeft,
+  MessageSquare,
 } from 'lucide-react';
 import { HopeHubLogo } from './icons';
 import { UserNav } from './user-nav';
@@ -38,6 +39,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Home },
     { href: '/events', label: 'Events', icon: Calendar },
+    { href: '/messages', label: 'Messages', icon: MessageSquare },
     { href: '/members', label: 'Members', icon: Users },
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
