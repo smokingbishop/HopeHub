@@ -1,7 +1,7 @@
 
 'use client';
 
-import { usePathname } from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
