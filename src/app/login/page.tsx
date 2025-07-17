@@ -25,11 +25,11 @@ function GoogleIcon() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-start justify-center bg-background p-4 pt-16">
       <Card className="w-full max-w-sm mx-auto">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <HopeHubLogo className="h-16 w-16 text-primary" />
+            <HopeHubLogo className="h-20 w-20 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to Hope Hub</CardTitle>
           <CardDescription>
