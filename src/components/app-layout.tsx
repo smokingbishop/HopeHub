@@ -42,7 +42,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
         <div className="flex items-center gap-2 md:hidden">
-          <HopeHubLogo className="h-6 w-6 text-primary" />
+          <HopeHubLogo className="h-8 w-8 text-primary" />
           <span className="font-bold">{pageTitle}</span>
         </div>
 
@@ -60,7 +60,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 href="#"
                 className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
               >
-                <HopeHubLogo className="h-5 w-5 transition-all group-hover:scale-110" />
+                <HopeHubLogo className="h-6 w-6 transition-all group-hover:scale-110" />
                 <span className="sr-only">Hope Hub</span>
               </Link>
               {navItems.map((item) => (
@@ -84,8 +84,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="hidden w-full items-center md:flex">
           <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
              <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
-                <HopeHubLogo className="h-6 w-6 text-primary" />
-                <span>Hope Hub</span>
+                <HopeHubLogo className="h-8 w-8 text-primary" />
+                <span className="text-lg">Hope Hub</span>
              </Link>
             {navItems.map((item) => (
               <Link
