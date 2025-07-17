@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function UserNav() {
   return (
@@ -21,7 +22,9 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="https://placehold.co/100x100.png" alt="@user" />
+            <AvatarImage asChild src="https://placehold.co/100x100.png">
+              <Image src="https://placehold.co/100x100.png" alt="@user" width={32} height={32} />
+            </AvatarImage>
             <AvatarFallback>MM</AvatarFallback>
           </Avatar>
         </Button>

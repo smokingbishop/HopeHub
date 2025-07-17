@@ -24,10 +24,20 @@ function getInitials(name: string) {
 export default function MessagesPage() {
   const [selectedConversation, setSelectedConversation] =
     React.useState<Conversation | null>(conversations[0]);
+  const [isClient, setIsClient] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
     
   const getParticipant = (senderId: string): Volunteer | undefined => {
     return selectedConversation?.participants.find(p => p.id === senderId);
   }
+
+  const formatTimestamp = (date: Date) => {
+    if (!isClient) return '';
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <AppLayout>
@@ -61,7 +71,7 @@ export default function MessagesPage() {
                   </p>
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {convo.messages[convo.messages.length - 1].timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {formatTimestamp(convo.messages[convo.messages.length - 1].timestamp)}
                 </span>
               </div>
             ))}
@@ -105,7 +115,7 @@ export default function MessagesPage() {
                            <div className={cn("max-w-xs lg:max-w-md p-3 rounded-lg", isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted")}>
                             <p className="text-sm">{message.text}</p>
                             <p className="text-xs text-right mt-1 opacity-70">
-                                {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {formatTimestamp(message.timestamp)}
                             </p>
                            </div>
                          </div>
