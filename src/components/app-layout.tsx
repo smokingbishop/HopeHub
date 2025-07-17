@@ -1,27 +1,17 @@
-
 'use client';
 
+import * as React from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarInset,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
 import {
   Home,
   Calendar,
   Users,
   Settings,
   Bell,
-  PanelLeft,
   MessageSquare,
+  MoreVertical,
+  PanelLeft,
 } from 'lucide-react';
 import { HopeHubLogo } from './icons';
 import { UserNav } from './user-nav';
@@ -32,6 +22,8 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Button } from './ui/button';
+import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { cn } from '@/lib/utils';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -44,60 +36,90 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/settings', label: 'Settings', icon: Settings },
   ];
 
+  const pageTitle = navItems.find((item) => item.href === pathname)?.label;
+
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
-            <HopeHubLogo className="h-8 w-8 text-primary" />
-            <span className="text-lg font-semibold">Hope Hub</span>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
+    <div className="flex min-h-screen w-full flex-col bg-muted/40">
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <div className="flex items-center gap-2 md:hidden">
+          <HopeHubLogo className="h-6 w-6 text-primary" />
+          <span className="font-bold">{pageTitle}</span>
+        </div>
+
+        {/* Mobile Nav */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button size="icon" variant="outline" className="sm:hidden ml-auto">
+              <MoreVertical className="h-5 w-5" />
+              <span className="sr-only">Toggle Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="sm:max-w-xs">
+            <nav className="grid gap-6 text-lg font-medium">
+              <Link
+                href="#"
+                className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
+              >
+                <HopeHubLogo className="h-5 w-5 transition-all group-hover:scale-110" />
+                <span className="sr-only">Hope Hub</span>
+              </Link>
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground',
+                    pathname === item.href && 'text-foreground'
+                  )}
                 >
-                  <a href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </SheetContent>
+        </Sheet>
+        
+        {/* Desktop Nav */}
+        <div className="hidden w-full items-center md:flex">
+          <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
+             <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
+                <HopeHubLogo className="h-6 w-6 text-primary" />
+                <span>Hope Hub</span>
+             </Link>
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'transition-colors hover:text-foreground',
+                  pathname === item.href
+                    ? 'text-foreground'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {item.label}
+              </Link>
             ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <UserNav />
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <div className="w-full flex-1">
-            {/* Can add breadcrumbs here */}
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8">
-                <Bell className="h-4 w-4" />
-                <span className="sr-only">Toggle notifications</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>No new notifications</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <div className="hidden md:block">
+          </nav>
+
+          <div className="ml-auto flex items-center gap-4">
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8">
+                    <Bell className="h-4 w-4" />
+                    <span className="sr-only">Toggle notifications</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>No new notifications</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             <UserNav />
           </div>
-        </header>
-        <main className="flex-1 overflow-auto">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+        </div>
+      </header>
+      <main className="flex-1 overflow-auto">{children}</main>
+    </div>
   );
 }
