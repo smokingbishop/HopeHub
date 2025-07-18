@@ -28,7 +28,7 @@ export type Conversation = {
 
 const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU' };
 
-const volunteers: Volunteer[] = [
+export const volunteers: Volunteer[] = [
   { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD' },
   { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS' },
   { id: '3', name: 'Mike Johnson', avatar: 'https://placehold.co/100x100.png?text=MJ' },
