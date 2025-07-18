@@ -141,7 +141,7 @@ export default function DashboardPage() {
               <CardDescription>
                 Events you have signed up to volunteer for.
               </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>

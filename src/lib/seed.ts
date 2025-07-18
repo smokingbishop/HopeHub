@@ -1,16 +1,10 @@
-
 import { collection, getDocs, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 import { mockUsers, mockEvents, mockAnnouncements, mockConversations } from './mock-data';
 
-// A simple flag to prevent seeding more than once per session.
-let seeded = false;
-
+// This function will now check Firestore every time to see if data exists.
+// The in-memory `seeded` flag has been removed for reliability during setup.
 export async function seedData() {
-  if (seeded) {
-    console.log("Data has already been seeded in this session.");
-    return;
-  }
   console.log("Checking if seeding is needed...");
 
   try {
@@ -74,10 +68,8 @@ export async function seedData() {
 
       await batch.commit();
       console.log('Seeding complete.');
-      seeded = true;
     } else {
         console.log("Database not empty. Skipping seed.");
-        seeded = true; // Mark as seeded to avoid re-checking
     }
   } catch (error) {
     console.error("Error seeding data: ", error);
