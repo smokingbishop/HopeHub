@@ -148,7 +148,7 @@ export async function addMember(data: CreateUserInput): Promise<User> {
   }
 }
 
-export async function updateMember(userId: string, data: Partial<Omit<User, 'id' | 'avatar'>>): Promise<void> {
+export async function updateMember(userId: string, data: Partial<Omit<User, 'id'>>): Promise<void> {
     try {
         const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, data);
