@@ -107,6 +107,21 @@ export async function getUserById(id: string): Promise<User | null> {
     return null;
 }
 
+export async function addMember(data: Omit<User, 'id' | 'avatar'>): Promise<User> {
+    const usersCol = collection(db, 'users');
+    const newDocRef = await addDoc(usersCol, {
+        ...data,
+        avatar: `https://placehold.co/100x100.png?text=${data.name.split(' ').map(n => n[0]).join('')}`
+    });
+
+    const newUser: User = {
+        id: newDocRef.id,
+        ...data,
+        avatar: `https://placehold.co/100x100.png?text=${data.name.split(' ').map(n => n[0]).join('')}`
+    }
+    return newUser;
+}
+
 // Returns the currently authenticated user from this application's data model
 export async function getCurrentUser(): Promise<User | null> {
   const firebaseUser = auth.currentUser;

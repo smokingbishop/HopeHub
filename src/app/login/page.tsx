@@ -50,7 +50,7 @@ export default function LoginPage() {
       console.error('Login failed:', error);
       toast({
         title: 'Login Failed',
-        description: 'Please check your email and password. If this is your first time, ensure data has been seeded.',
+        description: 'Please check your email and password.',
         variant: 'destructive',
       });
       setIsLoading(false);

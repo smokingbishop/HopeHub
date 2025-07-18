@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { type User } from '@/lib/data-service';
 import { AppLayout } from '@/components/app-layout';
 import { Toaster } from '@/components/ui/toaster';
-import { mockUsers } from '@/lib/mock-data';
 
 // Create a context to hold the user data
 export const UserContext = React.createContext<User | null>(null);
@@ -18,11 +17,15 @@ export function MainApp({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     // DEV-MODE: Bypass login and set a default admin user.
-    // The first user in mockUsers is the admin.
-    const defaultUser = mockUsers.find(u => u.role === 'Admin');
-    if (defaultUser) {
-        setUser(defaultUser);
-    }
+    // This is a temporary measure until login is re-enabled.
+    const defaultUser: User = {
+        id: 'BhlKYjrL0lQU96ze7vaVeYtn6cr1', // Replace with a real UID if needed for testing
+        name: 'Admin User',
+        email: 'admin@hopehub.com',
+        avatar: 'https://placehold.co/100x100.png?text=AU',
+        role: 'Admin'
+    };
+    setUser(defaultUser);
     setIsLoading(false);
     
     // Original auth logic is commented out below to disable login screen.
