@@ -41,7 +41,7 @@ export type MockAnnouncement = {
 // I've used a placeholder for the admin user. You should replace 'your-admin-uid-from-firebase'
 // with the actual UID of your admin user from the Firebase Authentication console.
 export const mockUsers: MockUser[] = [
-  { id: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', name: 'Admin User', email: 'admin@hopehub.com', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
+  { id: 'BhlKYjrL0lQU96ze7vaVeYtn6cr1', name: 'Admin User', email: 'smokingbishop@gmail.com', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
   { id: 'user-1', name: 'John Doe', email: 'john@example.com', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
   { id: 'user-2', name: 'Jane Smith', email: 'jane@example.com', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Creator' },
   { id: 'user-3', name: 'Mike Johnson', email: 'mike@example.com', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
