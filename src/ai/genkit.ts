@@ -16,11 +16,4 @@ export const ai = genkit({
     googleAI(),
     // Add other plugins here
   ],
-  // Log level for debugging.
-  // Options (in increasing order of verbosity): 'silent', 'error', 'warn', 'info', 'debug'
-  logLevel: 'debug',
-  // Where to store flow state.
-  flowStateStore: 'firebase',
-  // Where to store traces.
-  traceStore: 'firebase',
 });

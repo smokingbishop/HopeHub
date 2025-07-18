@@ -12,16 +12,7 @@ import { z } from 'zod';
 import * as admin from 'firebase-admin';
 import { User } from '@/lib/data-service';
 
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-  } catch (e) {
-    console.error('Firebase admin initialization error', e);
-  }
-}
+// Genkit's firebase() plugin handles initialization.
 
 const auth = admin.auth();
 const db = admin.firestore();
