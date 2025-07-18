@@ -154,6 +154,17 @@ export async function addMember(data: Omit<User, 'id' | 'avatar'>): Promise<User
   }
 }
 
+export async function updateMember(userId: string, data: Partial<Omit<User, 'id' | 'avatar'>>): Promise<void> {
+    try {
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, data);
+    } catch(error) {
+        console.error("Error updating member:", error);
+        throw error;
+    }
+}
+
+
 // Returns the currently authenticated user from this application's data model
 export async function getCurrentUser(): Promise<User | null> {
   const firebaseUser = auth.currentUser;
