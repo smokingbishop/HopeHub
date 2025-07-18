@@ -20,7 +20,7 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Announcement, Event } from '@/lib/data-service';
-import { getActiveAnnouncements, getEventsForUser, getNewEventsSince, getUserRewardPoints } from '@/lib/data-service';
+import { getActiveAnnouncements, getEventsForUser, getNewEventsSince, getUserRewardPoints, getUserVolunteerHours } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 
 function DashboardPageContent() {
@@ -30,6 +30,7 @@ function DashboardPageContent() {
   const [newEventsCount, setNewEventsCount] = React.useState(0);
   const [totalMembers, setTotalMembers] = React.useState(5); // Placeholder
   const [rewardPoints, setRewardPoints] = React.useState(0);
+  const [volunteerHours, setVolunteerHours] = React.useState(0);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -56,6 +57,10 @@ function DashboardPageContent() {
       // Fetch user reward points
       const points = await getUserRewardPoints(currentUser.id);
       setRewardPoints(points);
+
+      // Fetch user volunteer hours
+      const hours = await getUserVolunteerHours(currentUser.id);
+      setVolunteerHours(hours);
     }
     fetchData();
   }, [currentUser]);
@@ -74,9 +79,9 @@ function DashboardPageContent() {
               <HeartHandshake className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-2xl font-bold">{volunteerHours}</div>
               <p className="text-xs text-muted-foreground">
-                +20.1% from last month
+                All time contribution
               </p>
             </CardContent>
           </Card>

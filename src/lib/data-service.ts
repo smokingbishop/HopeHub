@@ -18,6 +18,7 @@ export interface VolunteerRole {
   id: string;
   name: string;
   points: number;
+  hours: number;
 }
 
 export interface Signup {
@@ -203,6 +204,28 @@ export async function getUserRewardPoints(userId: string): Promise<number> {
         return totalPoints;
     } catch (error) {
         console.error(`Error calculating reward points for user ${userId}:`, error);
+        return 0;
+    }
+}
+
+export async function getUserVolunteerHours(userId: string): Promise<number> {
+    try {
+        const userEvents = await getEventsForUser(userId);
+        let totalHours = 0;
+
+        for (const event of userEvents) {
+            for (const signup of event.signups) {
+                if (signup.userId === userId) {
+                    const role = event.volunteerRoles.find(r => r.id === signup.roleId);
+                    if (role) {
+                        totalHours += role.hours;
+                    }
+                }
+            }
+        }
+        return totalHours;
+    } catch (error) {
+        console.error(`Error calculating volunteer hours for user ${userId}:`, error);
         return 0;
     }
 }

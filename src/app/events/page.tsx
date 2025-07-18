@@ -73,9 +73,9 @@ function EventsPageContent() {
     setNewEvent(prev => ({ ...prev, date }));
   };
 
-  const handleRoleChange = (index: number, field: 'name' | 'points', value: string | number) => {
+  const handleRoleChange = (index: number, field: 'name' | 'points' | 'hours', value: string | number) => {
     const updatedRoles = [...newEvent.volunteerRoles];
-    if (field === 'points') {
+    if (field === 'points' || field === 'hours') {
       updatedRoles[index][field] = Number(value) < 0 ? 0 : Number(value);
     } else {
       updatedRoles[index][field] = value as string;
@@ -86,7 +86,7 @@ function EventsPageContent() {
   const addRole = () => {
     setNewEvent(prev => ({
         ...prev,
-        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0 }]
+        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0, hours: 0 }]
     }));
   };
 
@@ -106,10 +106,10 @@ function EventsPageContent() {
       return;
     }
 
-    if (newEvent.volunteerRoles.some(role => !role.name || role.points <= 0)) {
+    if (newEvent.volunteerRoles.some(role => !role.name || role.points <= 0 || role.hours <= 0)) {
         toast({
             title: 'Invalid Volunteer Roles',
-            description: 'Please ensure all roles have a name and points greater than 0.',
+            description: 'Please ensure all roles have a name, and points/hours are greater than 0.',
             variant: 'destructive',
         });
         return;
@@ -208,7 +208,7 @@ function EventsPageContent() {
                         />
                       </div>
                        <div className="grid w-full gap-1.5">
-                          <Label>Volunteer Roles & Points</Label>
+                          <Label>Volunteer Roles, Points & Hours</Label>
                           <div className="space-y-2">
                             {newEvent.volunteerRoles.map((role, index) => (
                                 <div key={role.id} className="flex items-center gap-2">
@@ -224,7 +224,14 @@ function EventsPageContent() {
                                         placeholder="Points"
                                         value={role.points}
                                         onChange={(e) => handleRoleChange(index, 'points', e.target.value)}
-                                        className="w-24"
+                                        className="w-20"
+                                    />
+                                     <Input
+                                        type="number"
+                                        placeholder="Hours"
+                                        value={role.hours}
+                                        onChange={(e) => handleRoleChange(index, 'hours', e.target.value)}
+                                        className="w-20"
                                     />
                                     <Button type="button" variant="destructive" size="icon" onClick={() => removeRole(index)}>
                                         <Trash2 className="h-4 w-4" />

@@ -17,7 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { getEventById, signUpForEvent, getUserById, updateEvent, type Event, type User, type VolunteerRole } from '@/lib/data-service';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, HeartHandshake, CheckCircle, Star, Edit, PlusCircle, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { ArrowLeft, HeartHandshake, CheckCircle, Star, Edit, PlusCircle, Trash2, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -113,10 +113,10 @@ function EventDetailsPageContent() {
     setEditingEvent({ ...editingEvent, date });
   };
   
-  const handleEditRoleChange = (index: number, field: 'name' | 'points', value: string | number) => {
+  const handleEditRoleChange = (index: number, field: 'name' | 'points' | 'hours', value: string | number) => {
     if (!editingEvent) return;
     const updatedRoles = [...editingEvent.volunteerRoles];
-    if (field === 'points') {
+    if (field === 'points' || field === 'hours') {
         updatedRoles[index][field] = Number(value) < 0 ? 0 : Number(value);
     } else {
         updatedRoles[index][field] = value as string;
@@ -128,7 +128,7 @@ function EventDetailsPageContent() {
      if (!editingEvent) return;
     setEditingEvent(prev => prev ? ({
         ...prev,
-        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0 }]
+        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0, hours: 0 }]
     }) : null);
   };
 
@@ -149,10 +149,10 @@ function EventDetailsPageContent() {
       });
       return;
     }
-     if (editingEvent.volunteerRoles.some(role => !role.name || role.points <= 0)) {
+     if (editingEvent.volunteerRoles.some(role => !role.name || role.points <= 0 || role.hours <= 0)) {
         toast({
             title: 'Invalid Volunteer Roles',
-            description: 'Please ensure all roles have a name and points greater than 0.',
+            description: 'Please ensure all roles have a name and points/hours are greater than 0.',
             variant: 'destructive',
         });
         return;
@@ -213,11 +213,17 @@ function EventDetailsPageContent() {
               </h3>
               <div className="space-y-2">
                 {event.volunteerRoles.map(role => (
-                    <div key={role.id} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                    <div key={role.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50">
                         <span className="font-medium">{role.name}</span>
-                        <div className="flex items-center gap-1 text-amber-500 font-semibold">
-                            <Star className="h-4 w-4 fill-current" />
-                            <span>{role.points} Points</span>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                                <Star className="h-4 w-4 fill-current" />
+                                <span>{role.points} Points</span>
+                            </div>
+                             <div className="flex items-center gap-1 text-blue-500 font-semibold">
+                                <Clock className="h-4 w-4" />
+                                <span>{role.hours} Hours</span>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -326,13 +332,13 @@ function EventDetailsPageContent() {
                         />
                       </div>
                        <div className="grid w-full gap-1.5">
-                          <Label>Volunteer Roles & Points</Label>
+                          <Label>Volunteer Roles, Points & Hours</Label>
                           <div className="space-y-2">
                             {editingEvent.volunteerRoles.map((role, index) => (
                                 <div key={role.id} className="flex items-center gap-2">
                                     <Input 
                                         type="text"
-                                        placeholder="Role Name (e.g., Greeter)"
+                                        placeholder="Role Name"
                                         value={role.name}
                                         onChange={(e) => handleEditRoleChange(index, 'name', e.target.value)}
                                         className="flex-1"
@@ -342,7 +348,14 @@ function EventDetailsPageContent() {
                                         placeholder="Points"
                                         value={role.points}
                                         onChange={(e) => handleEditRoleChange(index, 'points', e.target.value)}
-                                        className="w-24"
+                                        className="w-20"
+                                    />
+                                     <Input
+                                        type="number"
+                                        placeholder="Hours"
+                                        value={role.hours}
+                                        onChange={(e) => handleEditRoleChange(index, 'hours', e.target.value)}
+                                        className="w-20"
                                     />
                                     <Button type="button" variant="destructive" size="icon" onClick={() => removeEditRole(index)}>
                                         <Trash2 className="h-4 w-4" />
