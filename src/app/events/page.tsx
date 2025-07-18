@@ -111,7 +111,7 @@ function EventsPageContent() {
           {canCreateEvent && (
              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => setIsDialogOpen(true)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Create Event
                 </Button>
