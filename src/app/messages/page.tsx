@@ -189,9 +189,6 @@ export default function MessagesPage() {
                 </Avatar>
                 <div className="flex-1 truncate">
                   <p className="font-semibold">{convo.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {convo.messages[convo.messages.length - 1].text}
-                  </p>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {formatTimestamp(convo.messages[convo.messages.length - 1].timestamp)}
