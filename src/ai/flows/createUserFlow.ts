@@ -34,6 +34,7 @@ const createUserFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      // Access Firebase services inside the flow to ensure initialization.
       const auth = admin.auth();
       const db = admin.firestore();
 

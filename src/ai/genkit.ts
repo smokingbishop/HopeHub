@@ -16,10 +16,10 @@ export const ai = genkit({
     googleAI(),
     // Add other plugins here (e.g., other model providers, vector stores)
   ],
-  // Where to store flow state.
-  flowStateStore: 'firebase', // This works by simply using the string 'firebase'
-  // Where to store traces.
-  traceStore: 'firebase', // This works by simply using the string 'firebase'
+  // Where to store flow state. This also initializes the Firebase Admin SDK.
+  flowStateStore: 'firebase',
+  // Where to store traces. This also initializes the Firebase Admin SDK.
+  traceStore: 'firebase',
 });
 
 // To enable Firebase telemetry (metrics, traces, logs), call this function separately.
