@@ -1,6 +1,6 @@
 /**
  * @fileoverview This file initializes the Genkit AI system with necessary plugins.
- * It configures the Genkit instance and exports it for use throughout the application.
+ * It aiconfigures the Genkit instance and exports it for use throughout the application.
  *
  * It is important that this file is imported before any other file that uses Genkit.
  */
