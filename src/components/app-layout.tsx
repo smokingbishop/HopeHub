@@ -98,26 +98,36 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         
         {/* Desktop Nav */}
         <div className="hidden w-full items-center md:flex">
-          <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
-             <Link href="/" className="flex items-center gap-2 font-semibold text-foreground">
-                <HopeHubLogo className="h-10 w-10 text-primary" />
-                <span className="text-lg">Hope Hub</span>
-             </Link>
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'transition-colors hover:text-foreground',
-                  pathname === item.href
-                    ? 'text-foreground'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {item.label}
+          <TooltipProvider>
+            <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
+              <Link href="/" className="flex items-center gap-2 font-semibold text-foreground mr-4">
+                  <HopeHubLogo className="h-10 w-10 text-primary" />
+                  <span className="sr-only">Hope Hub</span>
               </Link>
-            ))}
-          </nav>
+              {navItems.map((item) => (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon"
+                      className={cn('h-9 w-9', 
+                        pathname === item.href ? 'text-foreground bg-accent' : 'text-muted-foreground'
+                      )}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-5 w-5" />
+                        <span className="sr-only">{item.label}</span>
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{item.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </nav>
+          </TooltipProvider>
 
           <div className="ml-auto flex items-center gap-4">
              <TooltipProvider>
