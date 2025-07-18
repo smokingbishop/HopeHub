@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { volunteers, type Volunteer } from '@/lib/mock-data';
+import { volunteers, currentUser, type Volunteer } from '@/lib/mock-data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,7 @@ function getInitials(name: string) {
 
 export default function MembersPage() {
   const allMembers: Volunteer[] = [
-    { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
+    currentUser,
     ...volunteers,
   ];
 

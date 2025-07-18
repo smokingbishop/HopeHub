@@ -36,7 +36,7 @@ export type Announcement = {
   endDate: Date;
 };
 
-const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' };
+export const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' };
 
 export const volunteers: Volunteer[] = [
   { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
