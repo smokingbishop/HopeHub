@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createAnnouncement, getAnnouncements, updateAnnouncement, deleteAnnouncement, type Announcement } from '@/lib/data-service';
-import { CalendarIcon, Megaphone, Send, Edit, Trash2 } from 'lucide-react';
+import { CalendarIcon, Megaphone, Send, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -47,6 +47,9 @@ function AnnouncementsPageContent() {
     endDate: getDefaultEndDate(new Date()),
   });
   const [allAnnouncements, setAllAnnouncements] = React.useState<Announcement[]>([]);
+
+  // State for creating
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
 
   // State for editing
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
@@ -100,6 +103,7 @@ function AnnouncementsPageContent() {
         setAllAnnouncements(prev => [newEntry, ...prev].sort((a,b) => b.startDate.getTime() - a.startDate.getTime()));
         const defaultStartDate = new Date();
         setNewAnnouncement({ title: '', message: '', startDate: defaultStartDate, endDate: getDefaultEndDate(defaultStartDate) });
+        setIsAddDialogOpen(false);
         toast({
           title: 'Announcement Posted!',
           description: 'Your announcement is now visible to all members.',
@@ -206,100 +210,110 @@ function AnnouncementsPageContent() {
       <div className="flex-1 space-y-4 p-4 sm:p-8">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Announcements</h2>
-        </div>
-        <div className={cn("grid gap-6", canManageAnnouncements ? "md:grid-cols-2" : "md:grid-cols-1")}>
-          {canManageAnnouncements && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Post a New Announcement</CardTitle>
-                <CardDescription>
-                  This will be visible to all members on their dashboard.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor="title">Title</Label>
-                    <Input 
-                      type="text" 
-                      id="title" 
-                      name="title" 
-                      placeholder="E.g., Upcoming Maintenance" 
-                      value={newAnnouncement.title}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid w-full gap-1.5">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea 
-                      placeholder="Type your message here." 
-                      id="message" 
-                      name="message"
-                      value={newAnnouncement.message}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                   <div className="space-y-4">
-                    <div className="grid w-full gap-1.5">
-                      <Label htmlFor="startDate">Start Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full justify-start text-left font-normal',
-                              !newAnnouncement.startDate && 'text-muted-foreground'
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newAnnouncement.startDate ? format(newAnnouncement.startDate, 'PPP') : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={newAnnouncement.startDate}
-                            onSelect={(date) => handleDateChange(date, 'startDate')}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="grid w-full gap-1.5">
-                      <Label htmlFor="endDate">End Date</Label>
-                       <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full justify-start text-left font-normal',
-                              !newAnnouncement.endDate && 'text-muted-foreground'
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newAnnouncement.endDate ? format(newAnnouncement.endDate, 'PPP') : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={newAnnouncement.endDate}
-                            onSelect={(date) => handleDateChange(date, 'endDate')}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <Button type="submit">
-                    <Send className="mr-2" />
-                    Post Announcement
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+           {canManageAnnouncements && (
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Post Announcement
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Post a New Announcement</DialogTitle>
+                        <DialogDescription>
+                            This will be visible to all members on their dashboard.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="title">Title</Label>
+                        <Input 
+                          type="text" 
+                          id="title" 
+                          name="title" 
+                          placeholder="E.g., Upcoming Maintenance" 
+                          value={newAnnouncement.title}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="grid w-full gap-1.5">
+                        <Label htmlFor="message">Message</Label>
+                        <Textarea 
+                          placeholder="Type your message here." 
+                          id="message" 
+                          name="message"
+                          value={newAnnouncement.message}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                       <div className="space-y-4">
+                        <div className="grid w-full gap-1.5">
+                          <Label htmlFor="startDate">Start Date</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full justify-start text-left font-normal',
+                                  !newAnnouncement.startDate && 'text-muted-foreground'
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {newAnnouncement.startDate ? format(newAnnouncement.startDate, 'PPP') : <span>Pick a date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={newAnnouncement.startDate}
+                                onSelect={(date) => handleDateChange(date, 'startDate')}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div className="grid w-full gap-1.5">
+                          <Label htmlFor="endDate">End Date</Label>
+                           <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'w-full justify-start text-left font-normal',
+                                  !newAnnouncement.endDate && 'text-muted-foreground'
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {newAnnouncement.endDate ? format(newAnnouncement.endDate, 'PPP') : <span>Pick a date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={newAnnouncement.endDate}
+                                onSelect={(date) => handleDateChange(date, 'endDate')}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+                       <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant="outline" type="button">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit">
+                                <Send className="mr-2 h-4 w-4" />
+                                Post Announcement
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
           )}
-          <Card className={cn(!canManageAnnouncements && "col-span-full")}>
+        </div>
+        <Card>
             <CardHeader>
               <CardTitle>All Announcements</CardTitle>
               <CardDescription>
@@ -338,7 +352,6 @@ function AnnouncementsPageContent() {
               )}
             </CardContent>
           </Card>
-        </div>
 
         {/* Edit Announcement Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -350,7 +363,7 @@ function AnnouncementsPageContent() {
                     </DialogDescription>
                 </DialogHeader>
                 {editingAnnouncement && (
-                    <form className="space-y-4">
+                    <div className="space-y-4 pt-4">
                       <div className="grid w-full items-center gap-1.5">
                         <Label htmlFor="edit-title">Title</Label>
                         <Input 
@@ -398,7 +411,7 @@ function AnnouncementsPageContent() {
                           </PopoverContent>
                         </Popover>
                       </div>
-                    </form>
+                    </div>
                 )}
                 <DialogFooter>
                     <DialogClose asChild>
