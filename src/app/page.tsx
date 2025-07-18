@@ -15,12 +15,12 @@ import {
   HeartHandshake,
   Megaphone,
   Star,
-  Users,
+  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Announcement, Event } from '@/lib/data-service';
-import { getActiveAnnouncements, getEventsForUser, getNewEventsSince, getUserRewardPoints, getUserVolunteerHours } from '@/lib/data-service';
+import { getActiveAnnouncements, getEventsForUser, getNewEventsSince, getUserRewardPoints, getUserVolunteerHours, getUnreadMessagesCount } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 
 function DashboardPageContent() {
@@ -28,7 +28,7 @@ function DashboardPageContent() {
   const [activeAnnouncements, setActiveAnnouncements] = React.useState<Announcement[]>([]);
   const [myEvents, setMyEvents] = React.useState<Event[]>([]);
   const [newEventsCount, setNewEventsCount] = React.useState(0);
-  const [totalMembers, setTotalMembers] = React.useState(5); // Placeholder
+  const [unreadMessages, setUnreadMessages] = React.useState(0);
   const [rewardPoints, setRewardPoints] = React.useState(0);
   const [volunteerHours, setVolunteerHours] = React.useState(0);
 
@@ -61,6 +61,10 @@ function DashboardPageContent() {
       // Fetch user volunteer hours
       const hours = await getUserVolunteerHours(currentUser.id);
       setVolunteerHours(hours);
+      
+      // Fetch unread messages count
+      const unreadCount = await getUnreadMessagesCount(currentUser.id);
+      setUnreadMessages(unreadCount);
     }
     fetchData();
   }, [currentUser]);
@@ -102,14 +106,14 @@ function DashboardPageContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Members
+                Unread Messages
               </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <Mail className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalMembers}</div>
+              <div className="text-2xl font-bold">{unreadMessages}</div>
               <p className="text-xs text-muted-foreground">
-                +2 since last month
+                Waiting for you in your inbox
               </p>
             </CardContent>
           </Card>

@@ -23,7 +23,7 @@ import {
   type User,
 } from '@/lib/data-service';
 import { cn } from '@/lib/utils';
-import { Send, Users, ArrowLeft, PlusCircle } from 'lucide-react';
+import { Send, Users, ArrowLeft, PlusCircle, Mail } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -298,9 +298,10 @@ function MessagesPageContent() {
             </>
           ) : (
             <div className="hidden md:flex flex-col items-center justify-center h-full text-center p-8">
+                <Mail className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">Select a conversation</h3>
                 <p className="text-muted-foreground">
-                    Choose from your existing conversations to start chatting.
+                    Choose from your existing conversations to start chatting, or create a new one.
                 </p>
             </div>
           )}

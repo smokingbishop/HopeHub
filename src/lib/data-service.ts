@@ -1,7 +1,7 @@
 
 
 import { db } from './firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc, setDoc, orderBy } from 'firebase/firestore';
 import { auth } from './firebase';
 import { createUser } from '@/ai/flows/createUserFlow';
 import { type CreateUserInput } from '@/ai/schemas/user-schemas';
@@ -418,8 +418,8 @@ export async function getConversationsForUser(userId: string): Promise<Conversat
         ) as User[];
         
         const messagesCol = collection(db, `conversations/${d.id}/messages`);
-        const messagesSnapshot = await getDocs(messagesCol);
-        const messages = messagesSnapshot.docs.map(docToMessage).sort((a,b) => a.timestamp.getTime() - b.timestamp.getTime());
+        const messagesSnapshot = await getDocs(query(messagesCol, orderBy('timestamp', 'asc')));
+        const messages = messagesSnapshot.docs.map(docToMessage);
 
         return {
             id: d.id,
@@ -445,7 +445,7 @@ export async function createConversation(name: string, participantIds: string[])
     });
     
     // Add a starting message
-    await addMessageToConversation(newDocRef.id, participantIds[0], `Started conversation: ${name}`);
+    await addMessageToConversation(newDocRef.id, 'system', `Started conversation: ${name}`);
 
     const newConvo = await getDoc(newDocRef);
     const data = newConvo.data()!;
@@ -472,6 +472,7 @@ export async function addMessageToConversation(conversationId: string, senderId:
         text,
         timestamp
     });
+     // Also update the conversation's last message time for sorting? Maybe later.
 
     return {
         id: newDocRef.id,
@@ -483,4 +484,29 @@ export async function addMessageToConversation(conversationId: string, senderId:
     console.error("Error adding message to conversation: ", error);
     throw error;
   }
+}
+
+
+export async function getUnreadMessagesCount(userId: string): Promise<number> {
+    try {
+        const conversations = await getConversationsForUser(userId);
+        let unreadCount = 0;
+
+        for (const convo of conversations) {
+            // Find the timestamp of the last message sent by the current user in this convo
+            const lastUserMessage = [...convo.messages].reverse().find(m => m.senderId === userId);
+            const lastUserMessageTimestamp = lastUserMessage ? lastUserMessage.timestamp.getTime() : 0;
+
+            // Count messages from others that are newer than the user's last message
+            for (const message of convo.messages) {
+                if (message.senderId !== userId && message.timestamp.getTime() > lastUserMessageTimestamp) {
+                    unreadCount++;
+                }
+            }
+        }
+        return unreadCount;
+    } catch (error) {
+        console.error("Error getting unread message count:", error);
+        return 0;
+    }
 }
