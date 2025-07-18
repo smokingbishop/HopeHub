@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import type { Announcement, Event } from '@/lib/data-service';
 import { getActiveAnnouncements, getEvents } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
+import { seedData } from '@/lib/seed';
 
 export default function DashboardPage() {
   const [activeAnnouncements, setActiveAnnouncements] = React.useState<Announcement[]>([]);
@@ -29,6 +30,9 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     async function fetchData() {
+      // Ensure data is seeded before fetching
+      await seedData();
+      
       const announcements = await getActiveAnnouncements();
       setActiveAnnouncements(announcements);
       const allEvents = await getEvents();

@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/card';
 import { getEvents, createEvent, getCurrentUser, type Event, type User } from '@/lib/data-service';
 import { ArrowRight, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
-import { seedData } from '@/lib/seed';
 import {
   Dialog,
   DialogContent,
@@ -54,7 +53,6 @@ export default function EventsPage() {
 
   React.useEffect(() => {
     async function fetchData() {
-      await seedData();
       const [allEvents, user] = await Promise.all([getEvents(), getCurrentUser()]);
       setEvents(allEvents.sort((a,b) => a.date.getTime() - b.date.getTime()));
       setCurrentUser(user);

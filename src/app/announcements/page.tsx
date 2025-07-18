@@ -21,7 +21,6 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
-import { seedData } from '@/lib/seed';
 
 type NewAnnouncementState = {
   title: string;
@@ -43,9 +42,6 @@ export default function AnnouncementsPage() {
 
   React.useEffect(() => {
     async function fetchData() {
-      // Temporary: seed data if db is empty.
-      await seedData();
-
       const user = await getCurrentUser();
       setCurrentUser(user);
       const announcements = await getActiveAnnouncements();

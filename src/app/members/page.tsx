@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUsers, type User } from '@/lib/data-service';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { seedData } from '@/lib/seed';
 
 function getInitials(name: string) {
   return name
@@ -27,8 +26,6 @@ export default function MembersPage() {
 
   React.useEffect(() => {
     async function fetchData() {
-      // Temporary: seed data if db is empty.
-      await seedData();
       const users = await getUsers();
       setAllMembers(users);
     }

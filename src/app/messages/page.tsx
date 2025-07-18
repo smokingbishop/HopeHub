@@ -40,7 +40,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { seedData } from '@/lib/seed';
 
 function getInitials(name: string) {
     return name.split(' ').map((n) => n[0]).join('');
@@ -62,9 +61,6 @@ export default function MessagesPage() {
   React.useEffect(() => {
     setIsClient(true);
     async function fetchData() {
-      // Temporary: seed data if db is empty.
-      await seedData();
-
       const user = await getCurrentUser();
       setCurrentUser(user);
       if (user) {
