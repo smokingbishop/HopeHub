@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { AppLayout } from '@/components/app-layout';
+import { MainApp, UserContext } from '../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getEvents, createEvent, getCurrentUser, type Event, type User } from '@/lib/data-service';
+import { getEvents, createEvent, type Event } from '@/lib/data-service';
 import { ArrowRight, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
 import {
   Dialog,
@@ -40,9 +40,9 @@ type NewEventState = {
   date: Date | undefined;
 };
 
-export default function EventsPage() {
+function EventsPageContent() {
   const [events, setEvents] = React.useState<Event[]>([]);
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const currentUser = React.useContext(UserContext);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { toast } = useToast();
   const [newEvent, setNewEvent] = React.useState<NewEventState>({
@@ -53,9 +53,8 @@ export default function EventsPage() {
 
   React.useEffect(() => {
     async function fetchData() {
-      const [allEvents, user] = await Promise.all([getEvents(), getCurrentUser()]);
+      const allEvents = await getEvents();
       setEvents(allEvents.sort((a,b) => a.date.getTime() - b.date.getTime()));
-      setCurrentUser(user);
     }
     fetchData();
   }, []);
@@ -106,7 +105,6 @@ export default function EventsPage() {
 
 
   return (
-    <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Upcoming Events</h2>
@@ -215,6 +213,13 @@ export default function EventsPage() {
           ))}
         </div>
       </div>
-    </AppLayout>
   );
+}
+
+export default function EventsPage() {
+  return (
+    <MainApp>
+      <EventsPageContent />
+    </MainApp>
+  )
 }

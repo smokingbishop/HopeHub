@@ -1,6 +1,7 @@
 
 import { db } from './firebase';
 import { collection, getDocs, getDoc, doc, addDoc, setDoc, where, query, Timestamp, writeBatch } from 'firebase/firestore';
+import { auth } from './firebase';
 
 // Data model interfaces
 export interface User {
@@ -102,12 +103,17 @@ export async function getUserById(id: string): Promise<User | null> {
     if(userSnap.exists()){
         return docToUser(userSnap);
     }
+    console.warn(`Could not find user with id: ${id}`);
     return null;
 }
 
-// Mock current user - replace with real auth later
+// Returns the currently authenticated user from this application's data model
 export async function getCurrentUser(): Promise<User | null> {
-  return getUserById('user-0');
+  const firebaseUser = auth.currentUser;
+  if (!firebaseUser) {
+    return null;
+  }
+  return getUserById(firebaseUser.uid);
 }
 
 

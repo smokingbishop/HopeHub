@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { AppLayout } from '@/components/app-layout';
+import { MainApp, UserContext } from '../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,11 +18,9 @@ import {
   getConversationsForUser, 
   createConversation, 
   getUsers, 
-  getCurrentUser, 
   addMessageToConversation,
   type Conversation, 
   type User,
-  type Message
 } from '@/lib/data-service';
 import { cn } from '@/lib/utils';
 import { Send, Users, ArrowLeft, PlusCircle } from 'lucide-react';
@@ -45,7 +43,7 @@ function getInitials(name: string) {
     return name.split(' ').map((n) => n[0]).join('');
 }
 
-export default function MessagesPage() {
+function MessagesPageContent() {
   const [selectedConversation, setSelectedConversation] = React.useState<Conversation | null>(null);
   const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [isClient, setIsClient] = React.useState(false);
@@ -53,7 +51,7 @@ export default function MessagesPage() {
   const [newConvoTitle, setNewConvoTitle] = React.useState('');
   const [selectedMemberIds, setSelectedMemberIds] = React.useState<string[]>([]);
   const [allUsers, setAllUsers] = React.useState<User[]>([]);
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const currentUser = React.useContext(UserContext);
   const [messageText, setMessageText] = React.useState('');
 
   const { toast } = useToast();
@@ -61,10 +59,8 @@ export default function MessagesPage() {
   React.useEffect(() => {
     setIsClient(true);
     async function fetchData() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
-      if (user) {
-        const userConversations = await getConversationsForUser(user.id);
+      if (currentUser) {
+        const userConversations = await getConversationsForUser(currentUser.id);
         setConversations(userConversations);
         if (userConversations.length > 0) {
             setSelectedConversation(userConversations[0]);
@@ -74,7 +70,7 @@ export default function MessagesPage() {
       setAllUsers(users);
     }
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   const getParticipant = (senderId: string): User | undefined => {
     return selectedConversation?.participants.find(p => p.id === senderId);
@@ -150,7 +146,6 @@ export default function MessagesPage() {
 
 
   return (
-    <AppLayout>
       <div className="flex h-full border-t">
         <aside
           className={cn(
@@ -228,9 +223,6 @@ export default function MessagesPage() {
                 <div className="flex-1 truncate">
                   <p className="font-semibold">{convo.name}</p>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {formatTimestamp(convo.messages[convo.messages.length - 1].timestamp)}
-                </span>
               </div>
             ))}
           </ScrollArea>
@@ -314,6 +306,13 @@ export default function MessagesPage() {
           )}
         </section>
       </div>
-    </AppLayout>
   );
+}
+
+export default function MessagesPage() {
+  return (
+    <MainApp>
+      <MessagesPageContent />
+    </MainApp>
+  )
 }

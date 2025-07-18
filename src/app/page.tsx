@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { MainApp } from './main-app';
 import {
   Card,
   CardContent,
@@ -9,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { AppLayout } from '@/components/app-layout';
 import {
   Calendar,
   HeartHandshake,
@@ -24,13 +24,12 @@ import { getActiveAnnouncements, getEvents } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 import { seedData } from '@/lib/seed';
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const [activeAnnouncements, setActiveAnnouncements] = React.useState<Announcement[]>([]);
   const [events, setEvents] = React.useState<Event[]>([]);
 
   React.useEffect(() => {
     async function fetchData() {
-      // Ensure data is seeded before fetching
       await seedData();
       
       const announcements = await getActiveAnnouncements();
@@ -42,7 +41,6 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
@@ -172,6 +170,13 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-    </AppLayout>
   );
+}
+
+export default function DashboardPage() {
+  return (
+    <MainApp>
+      <DashboardPageContent />
+    </MainApp>
+  )
 }

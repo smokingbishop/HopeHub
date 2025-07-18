@@ -1,8 +1,10 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/avatar';
+
+'use client';
+
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,20 +15,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Link from 'next/link';
 import Image from 'next/image';
 import { Badge } from './ui/badge';
+import { auth } from '@/lib/firebase';
+import { UserContext } from '@/app/main-app';
+
+function getInitials(name: string) {
+  if (!name) return '';
+  return name.split(' ').map((n) => n[0]).join('');
+}
+
 
 export function UserNav() {
+  const user = React.useContext(UserContext);
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
+
+  if (!user) {
+    return null; // Or a login button if preferred when no user is signed in
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage asChild src="https://placehold.co/100x100.png">
-              <Image src="https://placehold.co/100x100.png" alt="@user" width={32} height={32} />
+            <AvatarImage asChild src={user.avatar}>
+              <Image src={user.avatar} alt={user.name} width={32} height={32} />
             </AvatarImage>
-            <AvatarFallback>MM</AvatarFallback>
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -34,11 +59,11 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium leading-none">Admin User</p>
-              <Badge variant="default">Admin</Badge>
+              <p className="text-sm font-medium leading-none">{user.name}</p>
+              <Badge variant="default">{user.role}</Badge>
             </div>
             <p className="text-xs leading-none text-muted-foreground">
-              admin@hopehub.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -48,8 +73,8 @@ export function UserNav() {
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/login">Log out</Link>
+        <DropdownMenuItem onClick={handleSignOut}>
+          Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

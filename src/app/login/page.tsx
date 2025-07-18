@@ -1,3 +1,9 @@
+
+'use client';
+
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,6 +17,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { HopeHubLogo } from '@/components/icons';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
+
 
 function GoogleIcon() {
   return (
@@ -24,54 +34,96 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/');
+    } catch (error) {
+      console.error('Login failed:', error);
+      toast({
+        title: 'Login Failed',
+        description: 'Please check your email and password and try again.',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+    }
+  };
+
+
   return (
-    <div className="flex min-h-screen items-start justify-center bg-background p-4 pt-16">
-      <Card className="w-full max-w-sm mx-auto">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <HopeHubLogo className="h-20 w-20 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Welcome to Hope Hub</CardTitle>
-          <CardDescription>
-            Sign in to connect with the Marvelous Men of Hope.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4">
-            <Button variant="outline">
-              <GoogleIcon />
-              Continue with Google
-            </Button>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
+    <>
+      <Toaster />
+      <div className="flex min-h-screen items-start justify-center bg-background p-4 pt-16">
+        <Card className="w-full max-w-sm mx-auto">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <HopeHubLogo className="h-20 w-20 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Welcome to Hope Hub</CardTitle>
+            <CardDescription>
+              Sign in to connect with the Marvelous Men of Hope.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignIn}>
+              <div className="grid gap-4">
+                <Button variant="outline" type="button" disabled>
+                  <GoogleIcon />
+                  Continue with Google
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="m@example.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                </Button>
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
+            </form>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{' '}
+              <Link href="#" className="underline text-primary">
+                Sign up
+              </Link>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="m@example.com" />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" />
-            </div>
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
-          </div>
-          <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="#" className="underline text-primary">
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

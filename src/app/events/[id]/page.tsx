@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { AppLayout } from '@/components/app-layout';
+import { MainApp } from '../../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, HeartHandshake } from 'lucide-react';
 
-export default function EventDetailsPage() {
+function EventDetailsPageContent() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
@@ -47,16 +47,13 @@ export default function EventDetailsPage() {
 
   if (!event) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center h-full">
           <p>Loading event...</p>
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
         <Button variant="ghost" onClick={() => router.back()}>
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -121,6 +118,13 @@ export default function EventDetailsPage() {
           </CardFooter>
         </Card>
       </div>
-    </AppLayout>
   );
+}
+
+export default function EventDetailsPage() {
+    return (
+        <MainApp>
+            <EventDetailsPageContent />
+        </MainApp>
+    )
 }

@@ -1,5 +1,4 @@
 
-
 export type MockEvent = {
   id: string;
   title: string;
@@ -38,8 +37,11 @@ export type MockAnnouncement = {
   endDate: Date;
 };
 
+// IMPORTANT: The 'id' for users here should match the UID of the user in your Firebase Auth.
+// I've used a placeholder for the admin user. You should replace 'your-admin-uid-from-firebase'
+// with the actual UID of your admin user from the Firebase Authentication console.
 export const mockUsers: MockUser[] = [
-  { id: 'user-0', name: 'Admin User', email: 'admin@hopehub.com', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
+  { id: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', name: 'Admin User', email: 'admin@hopehub.com', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
   { id: 'user-1', name: 'John Doe', email: 'john@example.com', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
   { id: 'user-2', name: 'Jane Smith', email: 'jane@example.com', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Creator' },
   { id: 'user-3', name: 'Mike Johnson', email: 'mike@example.com', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
@@ -82,30 +84,30 @@ export const mockConversations: MockConversation[] = [
   {
     id: 'convo1',
     name: 'Gala Planning Committee',
-    participantIds: ['user-0', 'user-1', 'user-4', 'user-5'],
+    participantIds: ['3QO5rGxpB8hWdJ2b2rqiIu25C9G2', 'user-1', 'user-4', 'user-5'],
     messages: [
       { id: 'msg1', senderId: 'user-1', text: "Hey team, let's finalize the catering options for the gala.", timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
       { id: 'msg2', senderId: 'user-4', text: "I've received quotes from three vendors. I'll share them in the documents tab.", timestamp: new Date(new Date().setHours(new Date().getHours() - 2)) },
-      { id: 'msg3', senderId: 'user-0', text: "Perfect, thanks Emily! Let's review them by EOD tomorrow.", timestamp: new Date(new Date().setHours(new Date().getHours() - 1)) },
+      { id: 'msg3', senderId: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', text: "Perfect, thanks Emily! Let's review them by EOD tomorrow.", timestamp: new Date(new Date().setHours(new Date().getHours() - 1)) },
     ],
   },
   {
     id: 'convo2',
     name: 'John Doe',
-    participantIds: ['user-0', 'user-1'],
+    participantIds: ['3QO5rGxpB8hWdJ2b2rqiIu25C9G2', 'user-1'],
     messages: [
         { id: 'msg4', senderId: 'user-1', text: "Hi, I had a question about the Fun Run route.", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
-        { id: 'msg5', senderId: 'user-0', text: "Sure, what's up?", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
+        { id: 'msg5', senderId: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', text: "Sure, what's up?", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
         { id: 'msg6', senderId: 'user-1', text: "Is the final turn onto Main Street or Elm Street?", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 30))},
-        { id: 'msg7', senderId: 'user-0', text: "It's Main Street. The map in the event details is accurate.", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 5))},
+        { id: 'msg7', senderId: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', text: "It's Main Street. The map in the event details is accurate.", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 5))},
     ],
   },
     {
     id: 'convo3',
     name: 'Jane Smith',
-    participantIds: ['user-0', 'user-2'],
+    participantIds: ['3QO5rGxpB8hWdJ2b2rqiIu25C9G2', 'user-2'],
     messages: [
-        { id: 'msg8', senderId: 'user-0', text: "Hi Jane, just confirming you're still able to help with the Park Cleanup.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
+        { id: 'msg8', senderId: '3QO5rGxpB8hWdJ2b2rqiIu25C9G2', text: "Hi Jane, just confirming you're still able to help with the Park Cleanup.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
         { id: 'msg9', senderId: 'user-2', text: "Yes, I'll be there! Looking forward to it.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
     ],
   }

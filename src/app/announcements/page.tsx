@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { AppLayout } from '@/components/app-layout';
+import { MainApp, UserContext } from '../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,7 +14,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { createAnnouncement, getActiveAnnouncements, getCurrentUser, type Announcement, type User } from '@/lib/data-service';
+import { createAnnouncement, getActiveAnnouncements, type Announcement } from '@/lib/data-service';
 import { CalendarIcon, Megaphone, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -29,9 +29,9 @@ type NewAnnouncementState = {
   endDate: Date | undefined;
 };
 
-export default function AnnouncementsPage() {
+function AnnouncementsPageContent() {
   const { toast } = useToast();
-  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const currentUser = React.useContext(UserContext);
   const [newAnnouncement, setNewAnnouncement] = React.useState<NewAnnouncementState>({
     title: '',
     message: '',
@@ -42,8 +42,6 @@ export default function AnnouncementsPage() {
 
   React.useEffect(() => {
     async function fetchData() {
-      const user = await getCurrentUser();
-      setCurrentUser(user);
       const announcements = await getActiveAnnouncements();
       setAllAnnouncements(announcements.sort((a, b) => b.startDate.getTime() - a.startDate.getTime()));
     }
@@ -107,7 +105,6 @@ export default function AnnouncementsPage() {
   }).sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 
   return (
-    <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Announcements</h2>
@@ -235,6 +232,15 @@ export default function AnnouncementsPage() {
           </Card>
         </div>
       </div>
-    </AppLayout>
   );
 }
+
+
+export default function AnnouncementsPage() {
+  return (
+    <MainApp>
+      <AnnouncementsPageContent />
+    </MainApp>
+  );
+}
+
