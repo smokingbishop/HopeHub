@@ -14,13 +14,13 @@ import {
   Calendar,
   HeartHandshake,
   Megaphone,
-  BarChart3,
+  Star,
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Announcement, Event } from '@/lib/data-service';
-import { getActiveAnnouncements, getEventsForUser, getNewEventsSince } from '@/lib/data-service';
+import { getActiveAnnouncements, getEventsForUser, getNewEventsSince, getUserRewardPoints } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 
 function DashboardPageContent() {
@@ -29,6 +29,7 @@ function DashboardPageContent() {
   const [myEvents, setMyEvents] = React.useState<Event[]>([]);
   const [newEventsCount, setNewEventsCount] = React.useState(0);
   const [totalMembers, setTotalMembers] = React.useState(5); // Placeholder
+  const [rewardPoints, setRewardPoints] = React.useState(0);
 
   React.useEffect(() => {
     async function fetchData() {
@@ -51,6 +52,10 @@ function DashboardPageContent() {
           const allEvents = await getActiveAnnouncements();
           setNewEventsCount(allEvents.length)
       }
+
+      // Fetch user reward points
+      const points = await getUserRewardPoints(currentUser.id);
+      setRewardPoints(points);
     }
     fetchData();
   }, [currentUser]);
@@ -106,14 +111,14 @@ function DashboardPageContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Member Engagement
+                My Reward Points
               </CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <Star className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">High</div>
+              <div className="text-2xl font-bold">{rewardPoints}</div>
               <p className="text-xs text-muted-foreground">
-                Based on recent activity
+                Earned from volunteering
               </p>
             </CardContent>
           </Card>

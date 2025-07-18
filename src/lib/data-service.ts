@@ -185,6 +185,28 @@ export async function getCurrentUser(): Promise<User | null> {
   return getUserById(firebaseUser.uid);
 }
 
+export async function getUserRewardPoints(userId: string): Promise<number> {
+    try {
+        const userEvents = await getEventsForUser(userId);
+        let totalPoints = 0;
+
+        for (const event of userEvents) {
+            for (const signup of event.signups) {
+                if (signup.userId === userId) {
+                    const role = event.volunteerRoles.find(r => r.id === signup.roleId);
+                    if (role) {
+                        totalPoints += role.points;
+                    }
+                }
+            }
+        }
+        return totalPoints;
+    } catch (error) {
+        console.error(`Error calculating reward points for user ${userId}:`, error);
+        return 0;
+    }
+}
+
 
 // --- Event Functions ---
 export async function getEvents(): Promise<Event[]> {
