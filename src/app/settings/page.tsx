@@ -2,7 +2,6 @@
 'use client';
 
 import * as React from 'react';
-import { MainApp } from '../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,8 +10,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Download } from 'lucide-react';
+import { Download, ArrowLeft } from 'lucide-react';
 import { mockUsers, mockEvents, mockAnnouncements, mockConversations } from '@/lib/mock-data';
+import Link from 'next/link';
+import { HopeHubLogo } from '@/components/icons';
 
 function SettingsPageContent() {
   
@@ -44,11 +45,23 @@ function SettingsPageContent() {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 sm:p-8">
-      <div className="flex items-center justify-between space-y-2">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">
+       <div className="absolute top-4 left-4">
+         <Button variant="ghost" asChild>
+            <Link href="/login">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Login
+            </Link>
+         </Button>
+       </div>
+
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-4">
+            <HopeHubLogo className="h-20 w-20 text-primary" />
+        </div>
         <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
       </div>
-      <Card>
+      <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Data Management</CardTitle>
           <CardDescription>
@@ -75,8 +88,6 @@ function SettingsPageContent() {
 
 export default function SettingsPage() {
   return (
-    <MainApp>
       <SettingsPageContent />
-    </MainApp>
   );
 }

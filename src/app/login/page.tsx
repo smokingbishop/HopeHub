@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -50,7 +51,7 @@ export default function LoginPage() {
       console.error('Login failed:', error);
       toast({
         title: 'Login Failed',
-        description: 'Please check your email and password and try again.',
+        description: 'Please check your email and password. If this is your first time, ensure data has been seeded.',
         variant: 'destructive',
       });
       setIsLoading(false);
@@ -122,6 +123,15 @@ export default function LoginPage() {
               </Link>
             </div>
           </CardContent>
+          <CardFooter className="flex flex-col items-center justify-center text-sm">
+              <Separator className="mb-4" />
+               <p className="text-muted-foreground">
+                Having trouble logging in?
+               </p>
+               <Link href="/settings" className="underline text-primary">
+                Download seed data from the Settings page
+              </Link>
+          </CardFooter>
         </Card>
       </div>
     </>
