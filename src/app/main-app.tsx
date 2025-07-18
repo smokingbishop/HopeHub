@@ -9,7 +9,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { onAuthStateChanged, type User as FirebaseAuthUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-
 // Create a context to hold the user data
 export const UserContext = React.createContext<User | null>(null);
 
