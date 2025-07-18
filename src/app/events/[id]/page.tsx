@@ -14,24 +14,42 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getEventById, signUpForEvent, getUserById, type Event, type User } from '@/lib/data-service';
+import { getEventById, signUpForEvent, getUserById, updateEvent, type Event, type User, type VolunteerRole } from '@/lib/data-service';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, HeartHandshake, CheckCircle, Star } from 'lucide-react';
+import { ArrowLeft, HeartHandshake, CheckCircle, Star, Edit, PlusCircle, Trash2, Calendar as CalendarIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 function getInitials(name: string) {
     if (!name) return '';
     return name.split(' ').map((n) => n[0]).join('');
 }
 
+// Use a subset of Event for editing to avoid passing around large non-serializable objects if needed.
+type EditableEventState = Omit<Event, 'id' | 'signups' | 'createdAt'>;
+
 function EventDetailsPageContent() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
   const currentUser = React.useContext(UserContext);
+  
   const [event, setEvent] = React.useState<Event | null>(null);
   const [volunteers, setVolunteers] = React.useState<User[]>([]);
   const [isSignedUp, setIsSignedUp] = React.useState(false);
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
+  const [editingEvent, setEditingEvent] = React.useState<EditableEventState | null>(null);
+  
+  const canEditEvent = currentUser?.role === 'Admin' || currentUser?.role === 'Creator';
 
   React.useEffect(() => {
     if (params.id && currentUser) {
@@ -48,6 +66,13 @@ function EventDetailsPageContent() {
           if (foundEvent.signups.some(s => s.userId === currentUser.id)) {
             setIsSignedUp(true);
           }
+          // Initialize editing state
+          setEditingEvent({
+            title: foundEvent.title,
+            description: foundEvent.description,
+            date: foundEvent.date,
+            volunteerRoles: foundEvent.volunteerRoles
+          });
         }
       };
       fetchEvent();
@@ -55,15 +80,12 @@ function EventDetailsPageContent() {
   }, [params.id, currentUser]);
 
   const handleVolunteerSignUp = async () => {
-    // For now, we sign up for the first available role.
-    // A more advanced implementation would let the user choose a role.
     if (event && currentUser && !isSignedUp && event.volunteerRoles.length > 0) {
       const roleToSignUpFor = event.volunteerRoles[0];
 
       try {
         await signUpForEvent(event.id, currentUser.id, roleToSignUpFor.id);
         setIsSignedUp(true);
-        // Add current user to volunteers list for immediate UI update
         setVolunteers(prev => [...prev, currentUser]);
         toast({
           title: "You've signed up!",
@@ -79,15 +101,90 @@ function EventDetailsPageContent() {
     }
   };
 
-  if (!event) {
+  // --- Edit Handlers ---
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (!editingEvent) return;
+    const { name, value } = e.target;
+    setEditingEvent({ ...editingEvent, [name]: value });
+  };
+
+  const handleEditDateChange = (date: Date | undefined) => {
+    if (!editingEvent) return;
+    setEditingEvent({ ...editingEvent, date });
+  };
+  
+  const handleEditRoleChange = (index: number, field: 'name' | 'points', value: string | number) => {
+    if (!editingEvent) return;
+    const updatedRoles = [...editingEvent.volunteerRoles];
+    if (field === 'points') {
+        updatedRoles[index][field] = Number(value) < 0 ? 0 : Number(value);
+    } else {
+        updatedRoles[index][field] = value as string;
+    }
+    setEditingEvent(prev => prev ? ({...prev, volunteerRoles: updatedRoles }) : null);
+  };
+
+  const addEditRole = () => {
+     if (!editingEvent) return;
+    setEditingEvent(prev => prev ? ({
+        ...prev,
+        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0 }]
+    }) : null);
+  };
+
+  const removeEditRole = (index: number) => {
+    if (!editingEvent) return;
+    const updatedRoles = editingEvent.volunteerRoles.filter((_, i) => i !== index);
+    setEditingEvent(prev => prev ? ({ ...prev, volunteerRoles: updatedRoles }) : null);
+  }
+
+  const handleUpdateEvent = async () => {
+    if (!event || !editingEvent) return;
+
+    if (!editingEvent.title || !editingEvent.description || !editingEvent.date || editingEvent.volunteerRoles.length === 0) {
+      toast({
+        title: 'Incomplete Form',
+        description: 'Please fill out all event details and add at least one volunteer role.',
+        variant: 'destructive',
+      });
+      return;
+    }
+     if (editingEvent.volunteerRoles.some(role => !role.name || role.points <= 0)) {
+        toast({
+            title: 'Invalid Volunteer Roles',
+            description: 'Please ensure all roles have a name and points greater than 0.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
+    try {
+      await updateEvent(event.id, editingEvent);
+      // Optimistically update the UI
+      setEvent({ ...event, ...editingEvent });
+      setIsEditDialogOpen(false);
+      toast({
+        title: 'Event Updated!',
+        description: 'Your changes have been saved.',
+      });
+    } catch (error) {
+      console.error("Failed to update event:", error)
+      toast({
+        title: 'Update Failed',
+        description: 'Could not save your changes. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+
+  if (!event || !editingEvent) {
     return (
         <div className="flex items-center justify-center h-full">
           <p>Loading event...</p>
         </div>
     );
   }
-
-  const signedUpUserIds = event.signups.map(s => s.userId);
 
   return (
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -148,7 +245,7 @@ function EventDetailsPageContent() {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex items-center gap-4">
             <Button
               onClick={handleVolunteerSignUp}
               className={!isSignedUp ? 'bg-accent hover:bg-accent/90' : 'bg-green-600 hover:bg-green-700'}
@@ -167,6 +264,107 @@ function EventDetailsPageContent() {
                 </>
               )}
             </Button>
+            {canEditEvent && (
+              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg">
+                    <Edit className="mr-2 h-5 w-5" />
+                    Edit Event
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Edit Event</DialogTitle>
+                      <DialogDescription>
+                        Make changes to the event details below.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                          type="text"
+                          id="title"
+                          name="title"
+                          value={editingEvent.title}
+                          onChange={handleEditInputChange}
+                        />
+                      </div>
+                       <div className="grid w-full gap-1.5">
+                        <Label htmlFor="date">Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !editingEvent.date && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {editingEvent.date ? format(editingEvent.date, 'PPP') : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={editingEvent.date}
+                              onSelect={handleEditDateChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="grid w-full gap-1.5">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          name="description"
+                          value={editingEvent.description}
+                          onChange={handleEditInputChange}
+                          rows={4}
+                        />
+                      </div>
+                       <div className="grid w-full gap-1.5">
+                          <Label>Volunteer Roles & Points</Label>
+                          <div className="space-y-2">
+                            {editingEvent.volunteerRoles.map((role, index) => (
+                                <div key={role.id} className="flex items-center gap-2">
+                                    <Input 
+                                        type="text"
+                                        placeholder="Role Name (e.g., Greeter)"
+                                        value={role.name}
+                                        onChange={(e) => handleEditRoleChange(index, 'name', e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Input
+                                        type="number"
+                                        placeholder="Points"
+                                        value={role.points}
+                                        onChange={(e) => handleEditRoleChange(index, 'points', e.target.value)}
+                                        className="w-24"
+                                    />
+                                    <Button type="button" variant="destructive" size="icon" onClick={() => removeEditRole(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                          </div>
+                          <Button type="button" variant="outline" size="sm" onClick={addEditRole} className="mt-2">
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Add Role
+                          </Button>
+                       </div>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button onClick={handleUpdateEvent}>Save Changes</Button>
+                    </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
           </CardFooter>
         </Card>
       </div>

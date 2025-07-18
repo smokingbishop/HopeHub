@@ -238,6 +238,19 @@ export async function createEvent(data: Omit<Event, 'id' | 'signups' | 'createdA
   }
 }
 
+export async function updateEvent(eventId: string, data: Omit<Event, 'id' | 'signups' | 'createdAt'>): Promise<void> {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    await updateDoc(eventRef, {
+        ...data,
+        date: Timestamp.fromDate(data.date),
+    });
+  } catch(error) {
+    console.error("Error updating event: ", error);
+    throw error;
+  }
+}
+
 export async function signUpForEvent(eventId: string, userId: string, roleId: string): Promise<void> {
     try {
         const eventRef = doc(db, 'events', eventId);
