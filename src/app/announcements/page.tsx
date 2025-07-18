@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { createAnnouncement, getActiveAnnouncements, type Announcement } from '@/lib/data-service';
 import { CalendarIcon, Megaphone, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, addDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,11 @@ type NewAnnouncementState = {
   endDate: Date | undefined;
 };
 
+const getDefaultEndDate = (startDate: Date | undefined) => {
+  if (!startDate) return undefined;
+  return addDays(startDate, 7);
+}
+
 function AnnouncementsPageContent() {
   const { toast } = useToast();
   const currentUser = React.useContext(UserContext);
@@ -36,7 +41,7 @@ function AnnouncementsPageContent() {
     title: '',
     message: '',
     startDate: new Date(),
-    endDate: undefined,
+    endDate: getDefaultEndDate(new Date()),
   });
   const [allAnnouncements, setAllAnnouncements] = React.useState<Announcement[]>([]);
 
@@ -56,7 +61,11 @@ function AnnouncementsPageContent() {
   };
   
   const handleDateChange = (date: Date | undefined, field: 'startDate' | 'endDate') => {
-    setNewAnnouncement(prev => ({ ...prev, [field]: date }));
+    if (field === 'startDate') {
+        setNewAnnouncement(prev => ({...prev, startDate: date, endDate: getDefaultEndDate(date)}));
+    } else {
+        setNewAnnouncement(prev => ({ ...prev, [field]: date }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,12 +87,14 @@ function AnnouncementsPageContent() {
           endDate: newAnnouncement.endDate,
         });
         setAllAnnouncements(prev => [newEntry, ...prev].sort((a,b) => b.startDate.getTime() - a.startDate.getTime()));
-        setNewAnnouncement({ title: '', message: '', startDate: new Date(), endDate: undefined });
+        const defaultStartDate = new Date();
+        setNewAnnouncement({ title: '', message: '', startDate: defaultStartDate, endDate: getDefaultEndDate(defaultStartDate) });
         toast({
           title: 'Announcement Posted!',
           description: 'Your announcement is now visible to all members.',
         });
       } catch (error) {
+        console.error("Error creating announcement:", error);
         toast({
           title: 'Error',
           description: 'Could not create announcement. Please try again.',
