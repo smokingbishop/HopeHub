@@ -14,9 +14,23 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { conversations, type Conversation, type Volunteer } from '@/lib/mock-data';
+import { conversations as mockConversations, volunteers, type Conversation, type Volunteer } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
 import { Send, Users, ArrowLeft, PlusCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
 
 function getInitials(name: string) {
     return name.split(' ').map((n) => n[0]).join('');
@@ -24,8 +38,14 @@ function getInitials(name: string) {
 
 export default function MessagesPage() {
   const [selectedConversation, setSelectedConversation] =
-    React.useState<Conversation | null>(conversations[0]);
+    React.useState<Conversation | null>(mockConversations[0]);
+  const [conversations, setConversations] = React.useState<Conversation[]>(mockConversations);
   const [isClient, setIsClient] = React.useState(false);
+
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [newConvoTitle, setNewConvoTitle] = React.useState('');
+  const [selectedMembers, setSelectedMembers] = React.useState<string[]>([]);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     setIsClient(true);
@@ -39,6 +59,57 @@ export default function MessagesPage() {
     if (!isClient) return '';
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
+  
+  const handleMemberSelect = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
+
+  const handleCreateConversation = () => {
+    if (selectedMembers.length === 0) {
+      toast({ title: "No members selected", description: "Please select at least one member.", variant: "destructive" });
+      return;
+    }
+
+    if (selectedMembers.length > 1 && !newConvoTitle) {
+      toast({ title: "Title required", description: "Please provide a title for the group chat.", variant: "destructive" });
+      return;
+    }
+    
+    const memberObjects = volunteers.filter(v => selectedMembers.includes(v.id));
+    const currentUser = volunteers.find(v => v.id === '0'); // Assuming current user
+    if (currentUser) {
+       memberObjects.push(currentUser);
+    }
+    
+    let convoName = newConvoTitle;
+    if (selectedMembers.length === 1 && !newConvoTitle) {
+      convoName = memberObjects.find(m => m.id === selectedMembers[0])?.name || "New Chat";
+    }
+
+    const newConversation: Conversation = {
+      id: `convo${conversations.length + 1}`,
+      name: convoName,
+      participants: memberObjects,
+      messages: [{
+          id: `msg-start`,
+          senderId: '0',
+          text: `Started a new conversation: ${convoName}`,
+          timestamp: new Date(),
+      }],
+    };
+
+    setConversations([newConversation, ...conversations]);
+    setSelectedConversation(newConversation);
+    setNewConvoTitle('');
+    setSelectedMembers([]);
+    setIsDialogOpen(false);
+    toast({ title: "Conversation created!", description: `You can now start messaging with ${convoName}.` });
+  };
+
 
   return (
     <AppLayout>
@@ -51,10 +122,57 @@ export default function MessagesPage() {
         >
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
-            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
-              <PlusCircle className="h-5 w-5" />
-              <span className="sr-only">New Message</span>
-            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+                  <PlusCircle className="h-5 w-5" />
+                  <span className="sr-only">New Message</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>New Conversation</DialogTitle>
+                  <DialogDescription>
+                    Select members to start a new chat. Add a title for group conversations.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="title">Title (optional for 1-on-1)</Label>
+                    <Input id="title" value={newConvoTitle} onChange={e => setNewConvoTitle(e.target.value)} placeholder="E.g., Event Planning Team" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Members</Label>
+                    <ScrollArea className="h-48 rounded-md border p-2">
+                      <div className="space-y-2">
+                        {volunteers.filter(v => v.id !== '0').map(member => (
+                          <div key={member.id} className="flex items-center space-x-2">
+                            <Checkbox 
+                              id={`member-${member.id}`} 
+                              checked={selectedMembers.includes(member.id)}
+                              onCheckedChange={() => handleMemberSelect(member.id)}
+                            />
+                            <Label htmlFor={`member-${member.id}`} className="font-normal flex items-center gap-2">
+                               <Avatar className="h-6 w-6">
+                                <AvatarImage src={member.avatar} />
+                                <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                               </Avatar>
+                               {member.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button onClick={handleCreateConversation}>Create</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           <ScrollArea className="flex-1">
             {conversations.map((convo) => (
