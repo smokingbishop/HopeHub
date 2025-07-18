@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { MainApp } from './main-app';
+import { MainApp, UserContext } from './main-app';
 import {
   Card,
   CardContent,
@@ -20,22 +20,40 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { Announcement, Event } from '@/lib/data-service';
-import { getActiveAnnouncements, getEvents } from '@/lib/data-service';
+import { getActiveAnnouncements, getEventsForUser, getNewEventsSince } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 
 function DashboardPageContent() {
+  const currentUser = React.useContext(UserContext);
   const [activeAnnouncements, setActiveAnnouncements] = React.useState<Announcement[]>([]);
-  const [events, setEvents] = React.useState<Event[]>([]);
+  const [myEvents, setMyEvents] = React.useState<Event[]>([]);
+  const [newEventsCount, setNewEventsCount] = React.useState(0);
+  const [totalMembers, setTotalMembers] = React.useState(5); // Placeholder
 
   React.useEffect(() => {
     async function fetchData() {
+      if (!currentUser) return;
+      
+      // Fetch active announcements
       const announcements = await getActiveAnnouncements();
       setActiveAnnouncements(announcements);
-      const allEvents = await getEvents();
-      setEvents(allEvents);
+
+      // Fetch events user is signed up for
+      const userEvents = await getEventsForUser(currentUser.id);
+      setMyEvents(userEvents.sort((a, b) => a.date.getTime() - b.date.getTime()));
+
+      // Fetch new event count
+      if (currentUser.lastSignedUpAt) {
+          const newEvents = await getNewEventsSince(currentUser.lastSignedUpAt);
+          setNewEventsCount(newEvents.length);
+      } else {
+          // If user never signed up, all events are new
+          const allEvents = await getActiveAnnouncements();
+          setNewEventsCount(allEvents.length)
+      }
     }
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   return (
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -60,14 +78,14 @@ function DashboardPageContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Upcoming Events
+                New Events
               </CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{events.length}</div>
+              <div className="text-2xl font-bold">{newEventsCount}</div>
               <p className="text-xs text-muted-foreground">
-                View events calendar
+                Since you last signed up
               </p>
             </CardContent>
           </Card>
@@ -79,7 +97,7 @@ function DashboardPageContent() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5</div>
+              <div className="text-2xl font-bold">{totalMembers}</div>
               <p className="text-xs text-muted-foreground">
                 +2 since last month
               </p>
@@ -125,6 +143,9 @@ function DashboardPageContent() {
                   </div>
                 </div>
               ))}
+              {activeAnnouncements.length === 0 && (
+                <p className="text-sm text-muted-foreground">No recent announcements.</p>
+              )}
                <Button variant="outline" size="sm" asChild>
                   <Link href="/announcements">View all</Link>
                 </Button>
@@ -138,31 +159,24 @@ function DashboardPageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Community Food Drive</p>
-                  <p className="text-sm text-muted-foreground">
-                    Saturday, July 20th
-                  </p>
+              {myEvents.length > 0 ? myEvents.slice(0, 2).map(event => (
+                <div key={event.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{event.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {event.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/events/${event.id}`}>View</Link>
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/events/evt1">View</Link>
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Charity Fun Run</p>
-                  <p className="text-sm text-muted-foreground">
-                    Sunday, August 4th
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/events/evt2">View</Link>
-                </Button>
-              </div>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href="/events">View all events</Link>
-                </Button>
+              )) : (
+                <p className="text-sm text-muted-foreground">You haven't signed up for any events yet.</p>
+              )}
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/events">View all events</Link>
+              </Button>
             </CardContent>
           </Card>
         </div>

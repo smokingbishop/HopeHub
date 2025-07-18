@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { MainApp } from '../../main-app';
+import { MainApp, UserContext } from '../../main-app';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,33 +15,64 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { getEventById, type Event } from '@/lib/data-service';
+import { getEventById, signUpForEvent, getUserById, type Event, type User } from '@/lib/data-service';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, HeartHandshake, CheckCircle } from 'lucide-react';
+
+function getInitials(name: string) {
+    if (!name) return '';
+    return name.split(' ').map((n) => n[0]).join('');
+}
 
 function EventDetailsPageContent() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const currentUser = React.useContext(UserContext);
   const [event, setEvent] = React.useState<Event | null>(null);
+  const [volunteers, setVolunteers] = React.useState<User[]>([]);
+  const [isSignedUp, setIsSignedUp] = React.useState(false);
 
   React.useEffect(() => {
     if (params.id) {
+      const eventId = params.id as string;
       const fetchEvent = async () => {
-        const foundEvent = await getEventById(params.id as string);
+        const foundEvent = await getEventById(eventId);
         setEvent(foundEvent);
+        if (foundEvent) {
+          const volunteerDetails = await Promise.all(
+            foundEvent.volunteerIds.map(id => getUserById(id))
+          );
+          setVolunteers(volunteerDetails.filter(v => v !== null) as User[]);
+
+          if (currentUser && foundEvent.volunteerIds.includes(currentUser.id)) {
+            setIsSignedUp(true);
+          }
+        }
       };
       fetchEvent();
     }
-  }, [params.id]);
+  }, [params.id, currentUser]);
 
-  const handleVolunteerSignUp = () => {
-    if (event) {
-      toast({
-        title: "You've signed up!",
-        description: `Thanks for volunteering for ${event.title}.`,
-      });
+  const handleVolunteerSignUp = async () => {
+    if (event && currentUser && !isSignedUp) {
+      try {
+        await signUpForEvent(event.id, currentUser.id);
+        setIsSignedUp(true);
+        // Add current user to volunteers list for immediate UI update
+        setVolunteers(prev => [...prev, currentUser]);
+        toast({
+          title: "You've signed up!",
+          description: `Thanks for volunteering for ${event.title}.`,
+        });
+      } catch (error) {
+        toast({
+            title: "Sign-up Failed",
+            description: "Could not sign you up for the event. Please try again.",
+            variant: "destructive"
+        })
+      }
     }
   };
 
@@ -85,20 +116,18 @@ function EventDetailsPageContent() {
             <Separator />
             <div>
               <h3 className="text-xl font-semibold mb-4">
-                Volunteers ({event.volunteerIds.length})
+                Volunteers ({volunteers.length})
               </h3>
               <div className="flex flex-wrap gap-4">
-                {/* This would require another fetch to get volunteer details based on IDs */}
-                {event.volunteerIds.length > 0 && event.volunteerIds.map((id) => (
-                  <div key={id} className="flex flex-col items-center gap-2">
+                {volunteers.length > 0 ? volunteers.map((v) => (
+                  <div key={v.id} className="flex flex-col items-center gap-2 text-center w-20">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={`https://placehold.co/100x100.png?text=U`} />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={v.avatar} />
+                      <AvatarFallback>{getInitials(v.name)}</AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">Volunteer</span>
+                    <span className="text-sm font-medium truncate w-full">{v.name}</span>
                   </div>
-                ))}
-                {event.volunteerIds.length === 0 && (
+                )) : (
                   <p className="text-sm text-muted-foreground">
                     No volunteers yet. Be the first!
                   </p>
@@ -109,11 +138,21 @@ function EventDetailsPageContent() {
           <CardFooter>
             <Button
               onClick={handleVolunteerSignUp}
-              className="bg-accent hover:bg-accent/90"
+              className={!isSignedUp ? 'bg-accent hover:bg-accent/90' : 'bg-green-600 hover:bg-green-700'}
               size="lg"
+              disabled={isSignedUp}
             >
-              <HeartHandshake className="mr-2 h-5 w-5" />
-              Sign Up to Volunteer
+              {isSignedUp ? (
+                <>
+                  <CheckCircle className="mr-2 h-5 w-5" />
+                  You're signed up!
+                </>
+              ) : (
+                <>
+                  <HeartHandshake className="mr-2 h-5 w-5" />
+                  Sign Up to Volunteer
+                </>
+              )}
             </Button>
           </CardFooter>
         </Card>

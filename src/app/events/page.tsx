@@ -117,67 +117,69 @@ function EventsPageContent() {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create a New Event</DialogTitle>
-                    <DialogDescription>
-                      Fill in the details below to add a new event to the calendar.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid w-full items-center gap-1.5">
-                      <Label htmlFor="title">Title</Label>
-                      <Input
-                        type="text"
-                        id="title"
-                        name="title"
-                        placeholder="E.g., Community Food Drive"
-                        value={newEvent.title}
-                        onChange={handleInputChange}
-                      />
+                  <form onSubmit={handleCreateEvent}>
+                    <DialogHeader>
+                      <DialogTitle>Create a New Event</DialogTitle>
+                      <DialogDescription>
+                        Fill in the details below to add a new event to the calendar.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid w-full items-center gap-1.5">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                          type="text"
+                          id="title"
+                          name="title"
+                          placeholder="E.g., Community Food Drive"
+                          value={newEvent.title}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                       <div className="grid w-full gap-1.5">
+                        <Label htmlFor="date">Date</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant={'outline'}
+                              className={cn(
+                                'w-full justify-start text-left font-normal',
+                                !newEvent.date && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {newEvent.date ? format(newEvent.date, 'PPP') : <span>Pick a date</span>}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0">
+                            <Calendar
+                              mode="single"
+                              selected={newEvent.date}
+                              onSelect={handleDateChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <div className="grid w-full gap-1.5">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          placeholder="Describe the event and what volunteers will be doing."
+                          id="description"
+                          name="description"
+                          value={newEvent.description}
+                          onChange={handleInputChange}
+                          rows={4}
+                        />
+                      </div>
                     </div>
-                     <div className="grid w-full gap-1.5">
-                      <Label htmlFor="date">Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full justify-start text-left font-normal',
-                              !newEvent.date && 'text-muted-foreground'
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {newEvent.date ? format(newEvent.date, 'PPP') : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={newEvent.date}
-                            onSelect={handleDateChange}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                    <div className="grid w-full gap-1.5">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        placeholder="Describe the event and what volunteers will be doing."
-                        id="description"
-                        name="description"
-                        value={newEvent.description}
-                        onChange={handleInputChange}
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button onClick={handleCreateEvent}>Create Event</Button>
-                  </DialogFooter>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                      <Button type="submit">Create Event</Button>
+                    </DialogFooter>
+                  </form>
               </DialogContent>
             </Dialog>
           )}

@@ -1,6 +1,6 @@
 
 import { db } from './firebase';
-import { collection, getDocs, getDoc, doc, addDoc, setDoc, where, query, Timestamp, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion } from 'firebase/firestore';
 import { auth } from './firebase';
 
 // Data model interfaces
@@ -10,12 +10,14 @@ export interface User {
   email: string;
   avatar: string;
   role: 'Admin' | 'Creator' | 'Member';
+  lastSignedUpAt?: Date;
 }
 
 export interface Event {
   id: string;
   title: string;
   date: Date;
+  createdAt: Date;
   description: string;
   volunteerIds: string[];
 }
@@ -52,6 +54,7 @@ function docToUser(doc: any): User {
     email: data.email,
     avatar: data.avatar,
     role: data.role,
+    lastSignedUpAt: data.lastSignedUpAt?.toDate(),
   };
 }
 
@@ -62,6 +65,7 @@ function docToEvent(doc: any): Event {
     id: doc.id,
     title: data.title,
     date: data.date.toDate(),
+    createdAt: data.createdAt?.toDate() || new Date(0), // For older events
     description: data.description,
     volunteerIds: data.volunteerIds,
   };
@@ -159,6 +163,30 @@ export async function getEvents(): Promise<Event[]> {
   }
 }
 
+export async function getEventsForUser(userId: string): Promise<Event[]> {
+  try {
+    const q = query(collection(db, 'events'), where('volunteerIds', 'array-contains', userId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(docToEvent);
+  } catch (error) {
+    console.error(`Error fetching events for user ${userId}:`, error);
+    return [];
+  }
+}
+
+export async function getNewEventsSince(date: Date): Promise<Event[]> {
+    try {
+        const timestamp = Timestamp.fromDate(date);
+        const q = query(collection(db, 'events'), where('createdAt', '>', timestamp));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(docToEvent);
+    } catch (error) {
+        console.error("Error fetching new events:", error);
+        return [];
+    }
+}
+
+
 export async function getEventById(id: string): Promise<Event | null> {
   try {
     const eventDocRef = doc(db, 'events', id);
@@ -173,25 +201,51 @@ export async function getEventById(id: string): Promise<Event | null> {
   }
 }
 
-export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds'>): Promise<Event> {
+export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds' | 'createdAt'>): Promise<Event> {
   try {
     const eventsCol = collection(db, 'events');
-    const newDocRef = await addDoc(eventsCol, {
+    const newEvent = {
         ...data,
         date: Timestamp.fromDate(data.date),
+        createdAt: Timestamp.now(),
         volunteerIds: [] // Start with no volunteers
-    });
+    };
+    const newDocRef = await addDoc(eventsCol, newEvent);
 
-    const newEventData = {
+    return {
         id: newDocRef.id,
         ...data,
+        createdAt: newEvent.createdAt.toDate(),
         volunteerIds: []
     }
-    return newEventData;
   } catch (error) {
     console.error("Error creating event: ", error);
     throw error;
   }
+}
+
+export async function signUpForEvent(eventId: string, userId: string): Promise<void> {
+    try {
+        const eventRef = doc(db, 'events', eventId);
+        const userRef = doc(db, 'users', userId);
+
+        const batch = writeBatch(db);
+
+        // Add user to event's volunteers
+        batch.update(eventRef, {
+            volunteerIds: arrayUnion(userId)
+        });
+
+        // Update user's last sign up time
+        batch.update(userRef, {
+            lastSignedUpAt: Timestamp.now()
+        });
+
+        await batch.commit();
+    } catch (error) {
+        console.error(`Error signing up user ${userId} for event ${eventId}:`, error);
+        throw error;
+    }
 }
 
 
