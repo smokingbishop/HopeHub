@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -15,7 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { conversations, type Conversation, type Volunteer } from '@/lib/mock-data';
 import { cn } from '@/lib/utils';
-import { Send, Users, ArrowLeft } from 'lucide-react';
+import { Send, Users, ArrowLeft, PlusCircle } from 'lucide-react';
 
 function getInitials(name: string) {
     return name.split(' ').map((n) => n[0]).join('');
@@ -48,8 +49,12 @@ export default function MessagesPage() {
             selectedConversation ? 'hidden' : 'flex'
           )}
         >
-          <div className="p-4 border-b">
+          <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-2xl font-bold tracking-tight">Messages</h2>
+            <Button variant="ghost" size="icon" className="rounded-full h-8 w-8">
+              <PlusCircle className="h-5 w-5" />
+              <span className="sr-only">New Message</span>
+            </Button>
           </div>
           <ScrollArea className="flex-1">
             {conversations.map((convo) => (
