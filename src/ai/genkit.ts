@@ -5,9 +5,16 @@
  *
  * It is important that this file is imported before any other file that uses Genkit.
  */
+import { initializeApp } from 'firebase-admin/app';
+
 import { genkit } from 'genkit';
 import { enableFirebaseTelemetry } from '@genkit-ai/firebase';
 import { googleAI } from '@genkit-ai/googleai';
+
+// --- IMPORTANT ---
+// The Firebase Admin SDK is initialized automatically by Genkit when using
+// 'firebase' for flowStateStore and traceStore. A manual `initializeApp()`
+// is not needed and will cause "app already exists" errors.
 
 // Initialize Genkit with the Google AI plugin.
 // This allows the application to use Google's AI models like Gemini.
