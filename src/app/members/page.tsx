@@ -33,13 +33,13 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { type CreateUserInput } from '@/ai/flows/createUserFlow';
 
 
 type NewMemberState = Omit<User, 'id' | 'avatar'>;
@@ -59,7 +59,7 @@ function MembersPageContent() {
   
   // State for Add Member dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
-  const [newMember, setNewMember] = React.useState<NewMemberState>({
+  const [newMember, setNewMember] = React.useState<CreateUserInput>({
     name: '',
     email: '',
     role: 'Member',
@@ -111,14 +111,15 @@ function MembersPageContent() {
       setIsAddDialogOpen(false);
       toast({
         title: 'Member Added!',
-        description: `${createdMember.name} has been added.`,
+        description: `${createdMember.name} has been added and an invitation email will be sent.`,
       });
     } catch (error) {
-      toast({
-        title: 'Error Adding Member',
-        description: 'Could not add the member. Please try again.',
-        variant: 'destructive',
-      });
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+        toast({
+            title: 'Error Adding Member',
+            description: `Could not add the member: ${errorMessage}`,
+            variant: 'destructive',
+        });
     }
   };
 
@@ -221,7 +222,7 @@ function MembersPageContent() {
                   <DialogHeader>
                     <DialogTitle>Add a New Member</DialogTitle>
                     <DialogDescription>
-                      This will create a user document in Firestore. You will still need to create a corresponding user in Firebase Authentication.
+                      This will create a user in Firebase Authentication and send them an invitation to set their password.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
@@ -345,6 +346,7 @@ function MembersPageContent() {
                                 name="email"
                                 value={editingMember.email}
                                 onChange={handleEditMemberInputChange}
+                                disabled // Cannot change email as it's linked to Auth
                             />
                         </div>
                         <div className="grid w-full gap-1.5">

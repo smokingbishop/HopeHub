@@ -1,8 +1,9 @@
 
 
 import { db } from './firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc, setDoc } from 'firebase/firestore';
 import { auth } from './firebase';
+import { createUser, type CreateUserInput } from '@/ai/flows/createUserFlow';
 
 // Data model interfaces
 export interface User {
@@ -136,22 +137,12 @@ export async function getUserById(id: string): Promise<User | null> {
   }
 }
 
-export async function addMember(data: Omit<User, 'id' | 'avatar'>): Promise<User> {
+export async function addMember(data: CreateUserInput): Promise<User> {
   try {
-    const usersCol = collection(db, 'users');
-    const newDocRef = await addDoc(usersCol, {
-        ...data,
-        avatar: `https://placehold.co/100x100.png?text=${data.name.split(' ').map(n => n[0]).join('')}`
-    });
-
-    const newUser: User = {
-        id: newDocRef.id,
-        ...data,
-        avatar: `https://placehold.co/100x100.png?text=${data.name.split(' ').map(n => n[0]).join('')}`
-    }
-    return newUser;
+    const createdUser = await createUser(data);
+    return createdUser;
   } catch (error) {
-    console.error("Error adding member: ", error);
+    console.error("Error adding member via flow: ", error);
     throw error;
   }
 }
@@ -170,6 +161,8 @@ export async function deleteMember(userId: string): Promise<void> {
     try {
         const userRef = doc(db, 'users', userId);
         await deleteDoc(userRef);
+        // Note: This does not delete the user from Firebase Authentication.
+        // That would require a backend function with admin privileges.
     } catch(error) {
         console.error("Error deleting member:", error);
         throw error;
