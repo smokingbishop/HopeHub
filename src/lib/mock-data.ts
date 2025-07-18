@@ -32,7 +32,8 @@ export type Announcement = {
   id: string;
   title: string;
   message: string;
-  timestamp: Date;
+  startDate: Date;
+  endDate: Date;
 };
 
 const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' };
@@ -114,18 +115,21 @@ export const announcements: Announcement[] = [
     id: 'ann1',
     title: 'Annual Gala Dinner',
     message: 'Tickets are now on sale for our biggest event of the year!',
-    timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
+    startDate: new Date(new Date().setDate(new Date().getDate() - 2)),
+    endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
   },
   {
     id: 'ann2',
     title: 'Call for Volunteers',
     message: 'We need your help for the upcoming charity run. Sign up in the events tab.',
-    timestamp: new Date(new Date().setDate(new Date().getDate() - 5)),
+    startDate: new Date(new Date().setDate(new Date().getDate() - 5)),
+    endDate: new Date(new Date().setDate(new Date().getDate() + 10)),
   },
   {
     id: 'ann3',
     title: 'New Member Welcome',
     message: 'Please give a warm welcome to our newest members!',
-    timestamp: new Date(new Date().setDate(new Date().getDate() - 10)),
+    startDate: new Date(new Date().setDate(new Date().getDate() - 10)),
+    endDate: new Date(new Date().setDate(new Date().getDate() - 3)),
   },
 ];

@@ -15,35 +15,61 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { announcements, type Announcement } from '@/lib/mock-data';
-import { Megaphone, Send } from 'lucide-react';
+import { CalendarIcon, Megaphone, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+
+type NewAnnouncementState = {
+  title: string;
+  message: string;
+  startDate: Date | undefined;
+  endDate: Date | undefined;
+};
 
 export default function AnnouncementsPage() {
   const { toast } = useToast();
-  const [newAnnouncement, setNewAnnouncement] = React.useState({ title: '', message: '' });
+  const [newAnnouncement, setNewAnnouncement] = React.useState<NewAnnouncementState>({
+    title: '',
+    message: '',
+    startDate: undefined,
+    endDate: undefined,
+  });
   const [allAnnouncements, setAllAnnouncements] = React.useState(announcements);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewAnnouncement(prev => ({ ...prev, [name]: value }));
+    setNewAnnouncement((prev) => ({ ...prev, [name]: value }));
+  };
+  
+  const handleDateChange = (date: Date | undefined, field: 'startDate' | 'endDate') => {
+    setNewAnnouncement(prev => ({ ...prev, [field]: date }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newAnnouncement.title && newAnnouncement.message) {
+    if (newAnnouncement.title && newAnnouncement.message && newAnnouncement.startDate && newAnnouncement.endDate) {
       const newEntry: Announcement = {
         id: `ann${allAnnouncements.length + 1}`,
         title: newAnnouncement.title,
         message: newAnnouncement.message,
-        timestamp: new Date(),
+        startDate: newAnnouncement.startDate,
+        endDate: newAnnouncement.endDate,
       };
       setAllAnnouncements([newEntry, ...allAnnouncements]);
-      setNewAnnouncement({ title: '', message: '' });
+      setNewAnnouncement({ title: '', message: '', startDate: undefined, endDate: undefined });
       toast({
         title: 'Announcement Posted!',
         description: 'Your announcement is now visible to all members.',
       });
+    } else {
+        toast({
+            title: 'Incomplete Form',
+            description: 'Please fill out all fields, including start and end dates.',
+            variant: 'destructive',
+        });
     }
   };
 
@@ -84,6 +110,58 @@ export default function AnnouncementsPage() {
                     onChange={handleInputChange}
                   />
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid w-full gap-1.5">
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full justify-start text-left font-normal',
+                            !newAnnouncement.startDate && 'text-muted-foreground'
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newAnnouncement.startDate ? format(newAnnouncement.startDate, 'PPP') : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={newAnnouncement.startDate}
+                          onSelect={(date) => handleDateChange(date, 'startDate')}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid w-full gap-1.5">
+                    <Label htmlFor="endDate">End Date</Label>
+                     <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'w-full justify-start text-left font-normal',
+                            !newAnnouncement.endDate && 'text-muted-foreground'
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {newAnnouncement.endDate ? format(newAnnouncement.endDate, 'PPP') : <span>Pick a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={newAnnouncement.endDate}
+                          onSelect={(date) => handleDateChange(date, 'endDate')}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </div>
                 <Button type="submit">
                   <Send className="mr-2" />
                   Post Announcement
@@ -110,7 +188,7 @@ export default function AnnouncementsPage() {
                        {announcement.message}
                      </p>
                      <span className="text-xs text-muted-foreground">
-                       {formatDistanceToNow(announcement.timestamp, { addSuffix: true })}
+                       {format(announcement.startDate, 'MMM d')} - {format(announcement.endDate, 'MMM d, yyyy')}
                      </span>
                    </div>
                  </div>

@@ -19,7 +19,7 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { announcements, events } from '@/lib/mock-data';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 
 export default function DashboardPage() {
   return (
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                       {announcement.message}
                     </p>
                     <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(announcement.timestamp, { addSuffix: true })}
+                       {format(announcement.startDate, 'MMM d')} - {format(announcement.endDate, 'MMM d, yyyy')}
                     </span>
                   </div>
                 </div>
