@@ -27,6 +27,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 function getInitials(name: string) {
     if (!name) return '';
@@ -45,6 +46,10 @@ function EventDetailsPageContent() {
   const [event, setEvent] = React.useState<Event | null>(null);
   const [volunteers, setVolunteers] = React.useState<User[]>([]);
   const [isSignedUp, setIsSignedUp] = React.useState(false);
+
+  // State for Sign Up Dialog
+  const [isSignUpDialogOpen, setIsSignUpDialogOpen] = React.useState(false);
+  const [selectedRoleId, setSelectedRoleId] = React.useState<string | null>(null);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editingEvent, setEditingEvent] = React.useState<EditableEventState | null>(null);
@@ -80,13 +85,12 @@ function EventDetailsPageContent() {
   }, [params.id, currentUser]);
 
   const handleVolunteerSignUp = async () => {
-    if (event && currentUser && !isSignedUp && event.volunteerRoles.length > 0) {
-      const roleToSignUpFor = event.volunteerRoles[0];
-
+    if (event && currentUser && !isSignedUp && selectedRoleId) {
       try {
-        await signUpForEvent(event.id, currentUser.id, roleToSignUpFor.id);
+        await signUpForEvent(event.id, currentUser.id, selectedRoleId);
         setIsSignedUp(true);
         setVolunteers(prev => [...prev, currentUser]);
+        setIsSignUpDialogOpen(false);
         toast({
           title: "You've signed up!",
           description: `Thanks for volunteering for ${event.title}.`,
@@ -252,24 +256,64 @@ function EventDetailsPageContent() {
             </div>
           </CardContent>
           <CardFooter className="flex items-center gap-4">
-            <Button
-              onClick={handleVolunteerSignUp}
-              className={!isSignedUp ? 'bg-accent hover:bg-accent/90' : 'bg-green-600 hover:bg-green-700'}
-              size="lg"
-              disabled={isSignedUp || event.volunteerRoles.length === 0}
-            >
-              {isSignedUp ? (
-                <>
-                  <CheckCircle className="mr-2 h-5 w-5" />
-                  You're signed up!
-                </>
-              ) : (
-                <>
-                  <HeartHandshake className="mr-2 h-5 w-5" />
-                  Sign Up to Volunteer
-                </>
-              )}
-            </Button>
+             <Dialog open={isSignUpDialogOpen} onOpenChange={setIsSignUpDialogOpen}>
+              <DialogTrigger asChild>
+                 <Button
+                    className={!isSignedUp ? 'bg-accent hover:bg-accent/90' : 'bg-green-600 hover:bg-green-700'}
+                    size="lg"
+                    disabled={isSignedUp || event.volunteerRoles.length === 0}
+                  >
+                    {isSignedUp ? (
+                      <>
+                        <CheckCircle className="mr-2 h-5 w-5" />
+                        You're signed up!
+                      </>
+                    ) : (
+                      <>
+                        <HeartHandshake className="mr-2 h-5 w-5" />
+                        Sign Up to Volunteer
+                      </>
+                    )}
+                  </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Choose a Volunteer Role</DialogTitle>
+                  <DialogDescription>
+                    Select which role you'd like to sign up for. Thank you for your help!
+                  </DialogDescription>
+                </DialogHeader>
+                <RadioGroup value={selectedRoleId || ''} onValueChange={setSelectedRoleId} className="py-4 space-y-2">
+                  {event.volunteerRoles.map(role => (
+                    <Label key={role.id} htmlFor={role.id} className="flex items-center justify-between p-4 border rounded-md cursor-pointer hover:bg-accent has-[[data-state=checked]]:bg-accent">
+                      <div>
+                        <span className="font-semibold">{role.name}</span>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-amber-500 fill-current" />
+                            <span>{role.points} Points</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4 text-blue-500" />
+                            <span>{role.hours} Hours</span>
+                          </div>
+                        </div>
+                      </div>
+                      <RadioGroupItem value={role.id} id={role.id} />
+                    </Label>
+                  ))}
+                </RadioGroup>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button onClick={handleVolunteerSignUp} disabled={!selectedRoleId}>
+                    Confirm Sign Up
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             {canEditEvent && (
               <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogTrigger asChild>
