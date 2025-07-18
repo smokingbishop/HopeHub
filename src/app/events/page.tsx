@@ -117,7 +117,6 @@ function EventsPageContent() {
                 </Button>
               </DialogTrigger>
               <DialogContent>
-                 <form onSubmit={handleCreateEvent}>
                   <DialogHeader>
                     <DialogTitle>Create a New Event</DialogTitle>
                     <DialogDescription>
@@ -177,9 +176,8 @@ function EventsPageContent() {
                     <DialogClose asChild>
                       <Button variant="outline">Cancel</Button>
                     </DialogClose>
-                    <Button type="submit">Create Event</Button>
+                    <Button onClick={handleCreateEvent}>Create Event</Button>
                   </DialogFooter>
-                </form>
               </DialogContent>
             </Dialog>
           )}
