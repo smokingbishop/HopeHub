@@ -127,6 +127,23 @@ export async function getEventById(id: string): Promise<Event | null> {
     return null;
 }
 
+export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds'>): Promise<Event> {
+    const eventsCol = collection(db, 'events');
+    const newDocRef = await addDoc(eventsCol, {
+        ...data,
+        date: Timestamp.fromDate(data.date),
+        volunteerIds: [] // Start with no volunteers
+    });
+
+    const newEventData = {
+        id: newDocRef.id,
+        ...data,
+        volunteerIds: []
+    }
+    return newEventData;
+}
+
+
 // --- Announcement Functions ---
 export async function getAnnouncements(): Promise<Announcement[]> {
   const announcementsCol = collection(db, 'announcements');
