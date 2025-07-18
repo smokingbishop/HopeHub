@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { MainApp, UserContext } from '../../main-app';
 import { Button } from '@/components/ui/button';
 import {
@@ -97,15 +96,6 @@ function EventDetailsPageContent() {
           Back to Events
         </Button>
         <Card>
-          <div className="relative h-64 w-full">
-            <Image
-              src="https://placehold.co/800x400.png"
-              alt={event.title}
-              className="object-cover rounded-t-lg"
-              layout="fill"
-              data-ai-hint="community event"
-            />
-          </div>
           <CardHeader>
             <CardTitle className="text-3xl text-primary">{event.title}</CardTitle>
             <CardDescription>
