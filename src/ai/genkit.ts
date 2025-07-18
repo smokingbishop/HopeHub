@@ -14,11 +14,14 @@ import { googleAI } from '@genkit-ai/googleai';
 export const ai = genkit({
   plugins: [
     googleAI(),
-    enableFirebaseTelemetry({}),
-    // Add other plugins here
+    // Add other plugins here (e.g., other model providers, vector stores)
   ],
   // Where to store flow state.
   flowStateStore: 'firebase', // This works by simply using the string 'firebase'
   // Where to store traces.
   traceStore: 'firebase', // This works by simply using the string 'firebase'
 });
+
+// To enable Firebase telemetry (metrics, traces, logs), call this function separately.
+// It should be called after genkit() initialization.
+enableFirebaseTelemetry();

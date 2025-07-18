@@ -39,7 +39,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { type CreateUserInput } from '@/ai/flows/createUserFlow';
+import { type CreateUserInput } from '@/ai/schemas/user-schemas';
 
 
 type NewMemberState = Omit<User, 'id' | 'avatar'>;

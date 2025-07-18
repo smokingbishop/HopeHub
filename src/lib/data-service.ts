@@ -3,7 +3,8 @@
 import { db } from './firebase';
 import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc, setDoc } from 'firebase/firestore';
 import { auth } from './firebase';
-import { createUser, type CreateUserInput } from '@/ai/flows/createUserFlow';
+import { createUser } from '@/ai/flows/createUserFlow';
+import { type CreateUserInput } from '@/ai/schemas/user-schemas';
 
 // Data model interfaces
 export interface User {

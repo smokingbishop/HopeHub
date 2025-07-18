@@ -4,26 +4,14 @@
  * @fileOverview A flow for securely creating a new user in Firebase Authentication and Firestore.
  *
  * - createUser - Creates a user in Firebase Auth and a corresponding user document in Firestore.
- * - CreateUserInput - The input type for the createUser function.
- * - CreateUserOutput - The return type for the createUser function (which is a User object).
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
-import { User } from '@/lib/data-service';
+import { type User } from '@/lib/data-service';
+import { CreateUserInputSchema, type CreateUserInput } from '@/ai/schemas/user-schemas';
 
-// Genkit's firebase() plugin handles initialization.
-
-const auth = admin.auth();
-const db = admin.firestore();
-
-export const CreateUserInputSchema = z.object({
-  name: z.string().describe("The new user's full name."),
-  email: z.string().email().describe("The new user's email address."),
-  role: z.enum(['Admin', 'Creator', 'Member']).describe("The user's role."),
-});
-export type CreateUserInput = z.infer<typeof CreateUserInputSchema>;
 
 const UserSchema = z.object({
   id: z.string(),
@@ -46,6 +34,9 @@ const createUserFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      const auth = admin.auth();
+      const db = admin.firestore();
+
       // 1. Create user in Firebase Authentication
       const userRecord = await auth.createUser({
         email: input.email,
