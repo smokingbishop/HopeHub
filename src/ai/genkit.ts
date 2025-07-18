@@ -16,9 +16,6 @@ export const ai = genkit({
     enableFirebaseTelemetry({}),
     // Add other plugins here
   ],
-  // Log level for debugging.
-  // Options (in increasing order of verbosity): 'silent', 'error', 'warn', 'info', 'debug'
-  logLevel: 'debug',
   // Where to store flow state.
   flowStateStore: 'firebase', // This works by simply using the string 'firebase'
   // Where to store traces.
