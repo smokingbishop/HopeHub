@@ -13,13 +13,25 @@ export interface User {
   lastSignedUpAt?: Date;
 }
 
+export interface VolunteerRole {
+  id: string;
+  name: string;
+  points: number;
+}
+
+export interface Signup {
+  userId: string;
+  roleId: string;
+}
+
 export interface Event {
   id: string;
   title: string;
   date: Date;
   createdAt: Date;
   description: string;
-  volunteerIds: string[];
+  volunteerRoles: VolunteerRole[];
+  signups: Signup[];
 }
 
 export interface Announcement {
@@ -67,7 +79,8 @@ function docToEvent(doc: any): Event {
     date: data.date.toDate(),
     createdAt: data.createdAt?.toDate() || new Date(0), // For older events
     description: data.description,
-    volunteerIds: data.volunteerIds,
+    volunteerRoles: data.volunteerRoles || [],
+    signups: data.signups || [],
   };
 }
 
@@ -165,9 +178,10 @@ export async function getEvents(): Promise<Event[]> {
 
 export async function getEventsForUser(userId: string): Promise<Event[]> {
   try {
-    const q = query(collection(db, 'events'), where('volunteerIds', 'array-contains', userId));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(docToEvent);
+    const q = query(collection(db, 'events'), where('signups', 'array-contains', { userId: 'dummy', roleId: 'dummy'})); // This query is tricky with nested objects
+    const snapshot = await getDocs(collection(db, 'events'));
+    const allEvents = snapshot.docs.map(docToEvent);
+    return allEvents.filter(event => event.signups.some(signup => signup.userId === userId));
   } catch (error) {
     console.error(`Error fetching events for user ${userId}:`, error);
     return [];
@@ -201,14 +215,14 @@ export async function getEventById(id: string): Promise<Event | null> {
   }
 }
 
-export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds' | 'createdAt'>): Promise<Event> {
+export async function createEvent(data: Omit<Event, 'id' | 'signups' | 'createdAt'>): Promise<Event> {
   try {
     const eventsCol = collection(db, 'events');
     const newEvent = {
         ...data,
         date: Timestamp.fromDate(data.date),
         createdAt: Timestamp.now(),
-        volunteerIds: [] // Start with no volunteers
+        signups: [] // Start with no signups
     };
     const newDocRef = await addDoc(eventsCol, newEvent);
 
@@ -216,7 +230,7 @@ export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds' | 'cre
         id: newDocRef.id,
         ...data,
         createdAt: newEvent.createdAt.toDate(),
-        volunteerIds: []
+        signups: []
     }
   } catch (error) {
     console.error("Error creating event: ", error);
@@ -224,7 +238,7 @@ export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds' | 'cre
   }
 }
 
-export async function signUpForEvent(eventId: string, userId: string): Promise<void> {
+export async function signUpForEvent(eventId: string, userId: string, roleId: string): Promise<void> {
     try {
         const eventRef = doc(db, 'events', eventId);
         const userRef = doc(db, 'users', userId);
@@ -233,7 +247,7 @@ export async function signUpForEvent(eventId: string, userId: string): Promise<v
 
         // Add user to event's volunteers
         batch.update(eventRef, {
-            volunteerIds: arrayUnion(userId)
+            signups: arrayUnion({ userId, roleId })
         });
 
         // Update user's last sign up time

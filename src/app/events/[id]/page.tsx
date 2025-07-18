@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { getEventById, signUpForEvent, getUserById, type Event, type User } from '@/lib/data-service';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, HeartHandshake, CheckCircle } from 'lucide-react';
+import { ArrowLeft, HeartHandshake, CheckCircle, Star } from 'lucide-react';
 
 function getInitials(name: string) {
     if (!name) return '';
@@ -35,18 +35,18 @@ function EventDetailsPageContent() {
   const [isSignedUp, setIsSignedUp] = React.useState(false);
 
   React.useEffect(() => {
-    if (params.id) {
+    if (params.id && currentUser) {
       const eventId = params.id as string;
       const fetchEvent = async () => {
         const foundEvent = await getEventById(eventId);
         setEvent(foundEvent);
         if (foundEvent) {
           const volunteerDetails = await Promise.all(
-            foundEvent.volunteerIds.map(id => getUserById(id))
+            foundEvent.signups.map(signup => getUserById(signup.userId))
           );
           setVolunteers(volunteerDetails.filter(v => v !== null) as User[]);
 
-          if (currentUser && foundEvent.volunteerIds.includes(currentUser.id)) {
+          if (foundEvent.signups.some(s => s.userId === currentUser.id)) {
             setIsSignedUp(true);
           }
         }
@@ -56,9 +56,13 @@ function EventDetailsPageContent() {
   }, [params.id, currentUser]);
 
   const handleVolunteerSignUp = async () => {
-    if (event && currentUser && !isSignedUp) {
+    // For now, we sign up for the first available role.
+    // A more advanced implementation would let the user choose a role.
+    if (event && currentUser && !isSignedUp && event.volunteerRoles.length > 0) {
+      const roleToSignUpFor = event.volunteerRoles[0];
+
       try {
-        await signUpForEvent(event.id, currentUser.id);
+        await signUpForEvent(event.id, currentUser.id, roleToSignUpFor.id);
         setIsSignedUp(true);
         // Add current user to volunteers list for immediate UI update
         setVolunteers(prev => [...prev, currentUser]);
@@ -83,6 +87,8 @@ function EventDetailsPageContent() {
         </div>
     );
   }
+
+  const signedUpUserIds = event.signups.map(s => s.userId);
 
   return (
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -114,6 +120,23 @@ function EventDetailsPageContent() {
           <CardContent className="space-y-6">
             <p className="text-lg">{event.description}</p>
             <Separator />
+             <div>
+              <h3 className="text-xl font-semibold mb-4">
+                Volunteer Roles
+              </h3>
+              <div className="space-y-2">
+                {event.volunteerRoles.map(role => (
+                    <div key={role.id} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                        <span className="font-medium">{role.name}</span>
+                        <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                            <Star className="h-4 w-4 fill-current" />
+                            <span>{role.points} Points</span>
+                        </div>
+                    </div>
+                ))}
+              </div>
+            </div>
+            <Separator />
             <div>
               <h3 className="text-xl font-semibold mb-4">
                 Volunteers ({volunteers.length})
@@ -140,7 +163,7 @@ function EventDetailsPageContent() {
               onClick={handleVolunteerSignUp}
               className={!isSignedUp ? 'bg-accent hover:bg-accent/90' : 'bg-green-600 hover:bg-green-700'}
               size="lg"
-              disabled={isSignedUp}
+              disabled={isSignedUp || event.volunteerRoles.length === 0}
             >
               {isSignedUp ? (
                 <>

@@ -13,8 +13,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { getEvents, createEvent, type Event } from '@/lib/data-service';
-import { ArrowRight, PlusCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { getEvents, createEvent, type Event, type VolunteerRole } from '@/lib/data-service';
+import { ArrowRight, PlusCircle, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,11 +33,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 
 type NewEventState = {
   title: string;
   description: string;
   date: Date | undefined;
+  volunteerRoles: VolunteerRole[];
 };
 
 function EventsPageContent() {
@@ -49,6 +51,7 @@ function EventsPageContent() {
     title: '',
     description: '',
     date: undefined,
+    volunteerRoles: [],
   });
 
   React.useEffect(() => {
@@ -70,15 +73,46 @@ function EventsPageContent() {
     setNewEvent(prev => ({ ...prev, date }));
   };
 
+  const handleRoleChange = (index: number, field: 'name' | 'points', value: string | number) => {
+    const updatedRoles = [...newEvent.volunteerRoles];
+    if (field === 'points') {
+      updatedRoles[index][field] = Number(value) < 0 ? 0 : Number(value);
+    } else {
+      updatedRoles[index][field] = value as string;
+    }
+    setNewEvent(prev => ({...prev, volunteerRoles: updatedRoles }));
+  };
+
+  const addRole = () => {
+    setNewEvent(prev => ({
+        ...prev,
+        volunteerRoles: [...prev.volunteerRoles, { id: uuidv4(), name: '', points: 0 }]
+    }));
+  };
+
+  const removeRole = (index: number) => {
+    const updatedRoles = newEvent.volunteerRoles.filter((_, i) => i !== index);
+    setNewEvent(prev => ({ ...prev, volunteerRoles: updatedRoles }));
+  }
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEvent.title || !newEvent.description || !newEvent.date) {
+    if (!newEvent.title || !newEvent.description || !newEvent.date || newEvent.volunteerRoles.length === 0) {
       toast({
         title: 'Incomplete Form',
-        description: 'Please fill out all event details.',
+        description: 'Please fill out all event details and add at least one volunteer role.',
         variant: 'destructive',
       });
       return;
+    }
+
+    if (newEvent.volunteerRoles.some(role => !role.name || role.points <= 0)) {
+        toast({
+            title: 'Invalid Volunteer Roles',
+            description: 'Please ensure all roles have a name and points greater than 0.',
+            variant: 'destructive',
+        });
+        return;
     }
 
     try {
@@ -86,9 +120,10 @@ function EventsPageContent() {
         title: newEvent.title,
         description: newEvent.description,
         date: newEvent.date,
+        volunteerRoles: newEvent.volunteerRoles,
       });
       setEvents(prev => [...prev, createdEvent].sort((a,b) => a.date.getTime() - b.date.getTime()));
-      setNewEvent({ title: '', description: '', date: undefined });
+      setNewEvent({ title: '', description: '', date: undefined, volunteerRoles: [] });
       setIsDialogOpen(false);
       toast({
         title: 'Event Created!',
@@ -116,7 +151,7 @@ function EventsPageContent() {
                   Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-h-[90vh] overflow-y-auto">
                   <form onSubmit={handleCreateEvent}>
                     <DialogHeader>
                       <DialogTitle>Create a New Event</DialogTitle>
@@ -172,10 +207,40 @@ function EventsPageContent() {
                           rows={4}
                         />
                       </div>
+                       <div className="grid w-full gap-1.5">
+                          <Label>Volunteer Roles & Points</Label>
+                          <div className="space-y-2">
+                            {newEvent.volunteerRoles.map((role, index) => (
+                                <div key={role.id} className="flex items-center gap-2">
+                                    <Input 
+                                        type="text"
+                                        placeholder="Role Name (e.g., Greeter)"
+                                        value={role.name}
+                                        onChange={(e) => handleRoleChange(index, 'name', e.target.value)}
+                                        className="flex-1"
+                                    />
+                                    <Input
+                                        type="number"
+                                        placeholder="Points"
+                                        value={role.points}
+                                        onChange={(e) => handleRoleChange(index, 'points', e.target.value)}
+                                        className="w-24"
+                                    />
+                                    <Button type="button" variant="destructive" size="icon" onClick={() => removeRole(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                          </div>
+                          <Button type="button" variant="outline" size="sm" onClick={addRole} className="mt-2">
+                            <PlusCircle className="mr-2 h-4 w-4"/>
+                            Add Role
+                          </Button>
+                       </div>
                     </div>
                     <DialogFooter>
                       <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button type="button" variant="outline">Cancel</Button>
                       </DialogClose>
                       <Button type="submit">Create Event</Button>
                     </DialogFooter>
