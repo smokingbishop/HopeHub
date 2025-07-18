@@ -92,12 +92,18 @@ function docToMessage(doc: any): Message {
 
 // --- User Functions ---
 export async function getUsers(): Promise<User[]> {
-  const usersCol = collection(db, 'users');
-  const userSnapshot = await getDocs(usersCol);
-  return userSnapshot.docs.map(docToUser);
+  try {
+    const usersCol = collection(db, 'users');
+    const userSnapshot = await getDocs(usersCol);
+    return userSnapshot.docs.map(docToUser);
+  } catch (error) {
+    console.error("Error fetching users: ", error);
+    return [];
+  }
 }
 
 export async function getUserById(id: string): Promise<User | null> {
+  try {
     const userDocRef = doc(db, 'users', id);
     const userSnap = await getDoc(userDocRef);
     if(userSnap.exists()){
@@ -105,9 +111,14 @@ export async function getUserById(id: string): Promise<User | null> {
     }
     console.warn(`Could not find user with id: ${id}`);
     return null;
+  } catch (error) {
+    console.error(`Error fetching user by id ${id}:`, error);
+    return null;
+  }
 }
 
 export async function addMember(data: Omit<User, 'id' | 'avatar'>): Promise<User> {
+  try {
     const usersCol = collection(db, 'users');
     const newDocRef = await addDoc(usersCol, {
         ...data,
@@ -120,6 +131,10 @@ export async function addMember(data: Omit<User, 'id' | 'avatar'>): Promise<User
         avatar: `https://placehold.co/100x100.png?text=${data.name.split(' ').map(n => n[0]).join('')}`
     }
     return newUser;
+  } catch (error) {
+    console.error("Error adding member: ", error);
+    throw error;
+  }
 }
 
 // Returns the currently authenticated user from this application's data model
@@ -134,21 +149,32 @@ export async function getCurrentUser(): Promise<User | null> {
 
 // --- Event Functions ---
 export async function getEvents(): Promise<Event[]> {
-  const eventsCol = collection(db, 'events');
-  const eventSnapshot = await getDocs(eventsCol);
-  return eventSnapshot.docs.map(docToEvent);
+  try {
+    const eventsCol = collection(db, 'events');
+    const eventSnapshot = await getDocs(eventsCol);
+    return eventSnapshot.docs.map(docToEvent);
+  } catch (error) {
+    console.error("Error fetching events: ", error);
+    return [];
+  }
 }
 
 export async function getEventById(id: string): Promise<Event | null> {
+  try {
     const eventDocRef = doc(db, 'events', id);
     const eventSnap = await getDoc(eventDocRef);
     if(eventSnap.exists()){
         return docToEvent(eventSnap);
     }
     return null;
+  } catch (error) {
+    console.error(`Error fetching event by id ${id}:`, error);
+    return null;
+  }
 }
 
 export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds'>): Promise<Event> {
+  try {
     const eventsCol = collection(db, 'events');
     const newDocRef = await addDoc(eventsCol, {
         ...data,
@@ -162,28 +188,43 @@ export async function createEvent(data: Omit<Event, 'id' | 'volunteerIds'>): Pro
         volunteerIds: []
     }
     return newEventData;
+  } catch (error) {
+    console.error("Error creating event: ", error);
+    throw error;
+  }
 }
 
 
 // --- Announcement Functions ---
 export async function getAnnouncements(): Promise<Announcement[]> {
-  const announcementsCol = collection(db, 'announcements');
-  const announcementSnapshot = await getDocs(announcementsCol);
-  return announcementSnapshot.docs.map(docToAnnouncement);
+  try {
+    const announcementsCol = collection(db, 'announcements');
+    const announcementSnapshot = await getDocs(announcementsCol);
+    return announcementSnapshot.docs.map(docToAnnouncement);
+  } catch (error) {
+    console.error("Error fetching announcements: ", error);
+    return [];
+  }
 }
 
 export async function getActiveAnnouncements(): Promise<Announcement[]> {
-  const now = Timestamp.now();
-  const q = query(
-    collection(db, 'announcements'),
-    where('startDate', '<=', now),
-  );
+  try {
+    const now = Timestamp.now();
+    const q = query(
+      collection(db, 'announcements'),
+      where('startDate', '<=', now),
+    );
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(docToAnnouncement).filter(ann => ann.endDate >= now.toDate());
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(docToAnnouncement).filter(ann => ann.endDate >= now.toDate());
+  } catch (error) {
+    console.error("Error fetching active announcements: ", error);
+    return [];
+  }
 }
 
 export async function createAnnouncement(data: Omit<Announcement, 'id'>): Promise<Announcement> {
+  try {
     const announcementsCol = collection(db, 'announcements');
     const newDocRef = await addDoc(announcementsCol, {
         ...data,
@@ -191,11 +232,16 @@ export async function createAnnouncement(data: Omit<Announcement, 'id'>): Promis
         endDate: Timestamp.fromDate(data.endDate),
     });
     return { id: newDocRef.id, ...data };
+  } catch (error) {
+    console.error("Error creating announcement: ", error);
+    throw error;
+  }
 }
 
 
 // --- Conversation & Message Functions ---
 export async function getConversationsForUser(userId: string): Promise<Conversation[]> {
+  try {
     const q = query(collection(db, 'conversations'), where('participantIds', 'array-contains', userId));
     const snapshot = await getDocs(q);
     const conversations = await Promise.all(snapshot.docs.map(async (d) => {
@@ -218,9 +264,14 @@ export async function getConversationsForUser(userId: string): Promise<Conversat
         }
     }));
     return conversations;
+  } catch (error) {
+    console.error("Error getting conversations for user: ", error);
+    return [];
+  }
 }
 
 export async function createConversation(name: string, participantIds: string[]): Promise<Conversation> {
+  try {
     const conversationsCol = collection(db, 'conversations');
     const newDocRef = await addDoc(conversationsCol, {
         name,
@@ -240,9 +291,14 @@ export async function createConversation(name: string, participantIds: string[])
         participants: [], // Will be populated in the component
         messages: [] // Will be populated in the component
     }
+  } catch (error) {
+    console.error("Error creating conversation: ", error);
+    throw error;
+  }
 }
 
 export async function addMessageToConversation(conversationId: string, senderId: string, text: string): Promise<Message> {
+  try {
     const messagesCol = collection(db, `conversations/${conversationId}/messages`);
     const timestamp = Timestamp.now();
     const newDocRef = await addDoc(messagesCol, {
@@ -257,4 +313,8 @@ export async function addMessageToConversation(conversationId: string, senderId:
         text,
         timestamp: timestamp.toDate()
     }
+  } catch (error) {
+    console.error("Error adding message to conversation: ", error);
+    throw error;
+  }
 }
