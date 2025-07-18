@@ -102,7 +102,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
               <Link href="/" className="flex items-center gap-2 font-semibold text-foreground mr-4">
                   <HopeHubLogo className="h-10 w-10 text-primary" />
-                  <span>Hope Hub</span>
+                  <span className="text-2xl">Hope Hub</span>
               </Link>
               {navItems.map((item) => (
                 <Tooltip key={item.href}>
