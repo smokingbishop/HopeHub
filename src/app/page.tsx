@@ -19,9 +19,14 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { announcements, events } from '@/lib/mock-data';
-import { format } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function DashboardPage() {
+    const activeAnnouncements = announcements.filter(ann => {
+    const now = new Date();
+    return ann.startDate <= now && ann.endDate >= now;
+  }).sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+
   return (
     <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -95,7 +100,7 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {announcements.slice(0, 3).map((announcement) => (
+              {activeAnnouncements.slice(0, 3).map((announcement) => (
                 <div key={announcement.id} className="flex items-start gap-4">
                   <div className="bg-primary/10 p-2 rounded-full">
                     <Megaphone className="h-5 w-5 text-primary" />
@@ -106,7 +111,7 @@ export default function DashboardPage() {
                       {announcement.message}
                     </p>
                     <span className="text-xs text-muted-foreground">
-                       {format(announcement.startDate, 'MMM d')} - {format(announcement.endDate, 'MMM d, yyyy')}
+                       Posted {formatDistanceToNow(announcement.startDate)} ago
                     </span>
                   </div>
                 </div>

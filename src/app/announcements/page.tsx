@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { announcements, type Announcement } from '@/lib/mock-data';
 import { CalendarIcon, Megaphone, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow, parseISO } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -51,6 +51,14 @@ export default function AnnouncementsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newAnnouncement.title && newAnnouncement.message && newAnnouncement.startDate && newAnnouncement.endDate) {
+       if (newAnnouncement.endDate < newAnnouncement.startDate) {
+        toast({
+          title: 'Invalid Date Range',
+          description: 'End date cannot be before the start date.',
+          variant: 'destructive',
+        });
+        return;
+      }
       const newEntry: Announcement = {
         id: `ann${allAnnouncements.length + 1}`,
         title: newAnnouncement.title,
@@ -72,6 +80,11 @@ export default function AnnouncementsPage() {
         });
     }
   };
+  
+  const activeAnnouncements = allAnnouncements.filter(ann => {
+    const now = new Date();
+    return ann.startDate <= now && ann.endDate >= now;
+  }).sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 
   return (
     <AppLayout>
@@ -171,13 +184,13 @@ export default function AnnouncementsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Recent Announcements</CardTitle>
+              <CardTitle>Active Announcements</CardTitle>
               <CardDescription>
                 Here are the latest updates.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {allAnnouncements.slice(0, 5).map((announcement) => (
+              {activeAnnouncements.map((announcement) => (
                  <div key={announcement.id} className="flex items-start gap-4">
                    <div className="bg-primary/10 p-2 rounded-full">
                      <Megaphone className="h-5 w-5 text-primary" />
@@ -187,12 +200,15 @@ export default function AnnouncementsPage() {
                      <p className="text-sm text-muted-foreground">
                        {announcement.message}
                      </p>
-                     <span className="text-xs text-muted-foreground">
-                       {format(announcement.startDate, 'MMM d')} - {format(announcement.endDate, 'MMM d, yyyy')}
-                     </span>
+                      <span className="text-xs text-muted-foreground">
+                        Posted {formatDistanceToNow(announcement.startDate)} ago
+                      </span>
                    </div>
                  </div>
               ))}
+              {activeAnnouncements.length === 0 && (
+                <p className="text-sm text-muted-foreground">No active announcements.</p>
+              )}
             </CardContent>
           </Card>
         </div>
