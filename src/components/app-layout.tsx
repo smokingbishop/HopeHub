@@ -99,7 +99,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Desktop Nav */}
         <div className="hidden w-full items-center md:flex">
           <TooltipProvider>
-            <nav className="hidden md:flex md:flex-row md:items-center md:gap-5 lg:gap-6 text-sm font-medium">
+            <nav className="hidden md:flex md:flex-row md:items-center md:gap-2 text-sm font-medium">
               <Link href="/" className="flex items-center gap-2 font-semibold text-foreground mr-4">
                   <HopeHubLogo className="h-10 w-10 text-primary" />
                   <span className="text-2xl">Hope Hub</span>
