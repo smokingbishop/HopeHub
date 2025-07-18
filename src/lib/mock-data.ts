@@ -11,7 +11,7 @@ export type Volunteer = {
   id: string;
   name: string;
   avatar: string;
-  role: 'Admin' | 'Member';
+  role: 'Admin' | 'Creator' | 'Member';
 };
 
 export type Message = {
@@ -39,7 +39,7 @@ const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://p
 
 export const volunteers: Volunteer[] = [
   { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
-  { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Member' },
+  { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Creator' },
   { id: '3', name: 'Mike Johnson', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
   { id: '4', name: 'Emily Davis', avatar: 'https://placehold.co/100x100.png?text=ED', role: 'Member' },
   { id: '5', name: 'Chris Lee', avatar: 'https://placehold.co/100x100.png?text=CL', role: 'Member' },

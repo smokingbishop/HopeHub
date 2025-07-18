@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { volunteers, type Volunteer } from '@/lib/mock-data';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 function getInitials(name: string) {
   return name
@@ -26,6 +27,17 @@ export default function MembersPage() {
     { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
     ...volunteers,
   ];
+
+  const getBadgeVariant = (role: Volunteer['role']): 'default' | 'secondary' | 'outline' => {
+    switch (role) {
+      case 'Admin':
+        return 'default';
+      case 'Creator':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
 
   return (
     <AppLayout>
@@ -58,7 +70,7 @@ export default function MembersPage() {
                   <div className="flex-1">
                     <p className="font-medium">{member.name}</p>
                   </div>
-                  <Badge variant={member.role === 'Admin' ? 'default' : 'secondary'}>
+                  <Badge variant={getBadgeVariant(member.role)}>
                     {member.role}
                   </Badge>
                 </div>
