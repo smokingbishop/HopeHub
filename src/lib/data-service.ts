@@ -341,6 +341,30 @@ export async function createAnnouncement(data: Omit<Announcement, 'id'>): Promis
   }
 }
 
+export async function updateAnnouncement(announcementId: string, data: Omit<Announcement, 'id'>): Promise<void> {
+    try {
+        const announcementRef = doc(db, 'announcements', announcementId);
+        await updateDoc(announcementRef, {
+            ...data,
+            startDate: Timestamp.fromDate(data.startDate),
+            endDate: Timestamp.fromDate(data.endDate),
+        });
+    } catch(error) {
+        console.error("Error updating announcement:", error);
+        throw error;
+    }
+}
+
+export async function deleteAnnouncement(announcementId: string): Promise<void> {
+    try {
+        const announcementRef = doc(db, 'announcements', announcementId);
+        await deleteDoc(announcementRef);
+    } catch(error) {
+        console.error("Error deleting announcement:", error);
+        throw error;
+    }
+}
+
 
 // --- Conversation & Message Functions ---
 export async function getConversationsForUser(userId: string): Promise<Conversation[]> {
