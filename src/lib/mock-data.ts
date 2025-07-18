@@ -11,6 +11,7 @@ export type Volunteer = {
   id: string;
   name: string;
   avatar: string;
+  role: 'Admin' | 'Member';
 };
 
 export type Message = {
@@ -34,14 +35,14 @@ export type Announcement = {
   timestamp: Date;
 };
 
-const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU' };
+const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' };
 
 export const volunteers: Volunteer[] = [
-  { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD' },
-  { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS' },
-  { id: '3', name: 'Mike Johnson', avatar: 'https://placehold.co/100x100.png?text=MJ' },
-  { id: '4', name: 'Emily Davis', avatar: 'https://placehold.co/100x100.png?text=ED' },
-  { id: '5', name: 'Chris Lee', avatar: 'https://placehold.co/100x100.png?text=CL' },
+  { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
+  { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Member' },
+  { id: '3', name: 'Mike Johnson', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
+  { id: '4', name: 'Emily Davis', avatar: 'https://placehold.co/100x100.png?text=ED', role: 'Member' },
+  { id: '5', name: 'Chris Lee', avatar: 'https://placehold.co/100x100.png?text=CL', role: 'Member' },
 ];
 
 export const events: Event[] = [

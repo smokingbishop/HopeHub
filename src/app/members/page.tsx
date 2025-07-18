@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { volunteers, type Volunteer } from '@/lib/mock-data';
 import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 
 function getInitials(name: string) {
   return name
@@ -21,6 +22,11 @@ function getInitials(name: string) {
 }
 
 export default function MembersPage() {
+  const allMembers: Volunteer[] = [
+    { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
+    ...volunteers,
+  ];
+
   return (
     <AppLayout>
       <div className="flex-1 space-y-4 p-4 sm:p-8">
@@ -29,27 +35,32 @@ export default function MembersPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>All Members ({volunteers.length})</CardTitle>
+            <CardTitle>All Members ({allMembers.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {volunteers.map((volunteer) => (
-                <div key={volunteer.id} className="flex items-center gap-4">
+              {allMembers.map((member) => (
+                <div key={member.id} className="flex items-center gap-4">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage asChild src={volunteer.avatar}>
+                    <AvatarImage asChild src={member.avatar}>
                       <Image
-                        src={volunteer.avatar}
-                        alt={volunteer.name}
+                        src={member.avatar}
+                        alt={member.name}
                         width={40}
                         height={40}
                         data-ai-hint="person"
                       />
                     </AvatarImage>
                     <AvatarFallback>
-                      {getInitials(volunteer.name)}
+                      {getInitials(member.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <p className="font-medium">{volunteer.name}</p>
+                  <div className="flex-1">
+                    <p className="font-medium">{member.name}</p>
+                  </div>
+                  <Badge variant={member.role === 'Admin' ? 'default' : 'secondary'}>
+                    {member.role}
+                  </Badge>
                 </div>
               ))}
             </div>

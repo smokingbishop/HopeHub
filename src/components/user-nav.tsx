@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Badge } from './ui/badge';
 
 export function UserNav() {
   return (
@@ -32,7 +33,10 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Admin User</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium leading-none">Admin User</p>
+              <Badge variant="default">Admin</Badge>
+            </div>
             <p className="text-xs leading-none text-muted-foreground">
               admin@hopehub.com
             </p>
