@@ -10,10 +10,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { volunteers, currentUser, type Volunteer } from '@/lib/mock-data';
+import { getUsers, type User } from '@/lib/data-service';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { seedData } from '@/lib/seed';
 
 function getInitials(name: string) {
   return name
@@ -23,12 +23,20 @@ function getInitials(name: string) {
 }
 
 export default function MembersPage() {
-  const allMembers: Volunteer[] = [
-    currentUser,
-    ...volunteers,
-  ];
+  const [allMembers, setAllMembers] = React.useState<User[]>([]);
 
-  const getBadgeVariant = (role: Volunteer['role']): 'default' | 'secondary' | 'outline' => {
+  React.useEffect(() => {
+    async function fetchData() {
+      // Temporary: seed data if db is empty.
+      await seedData();
+      const users = await getUsers();
+      setAllMembers(users);
+    }
+    fetchData();
+  }, []);
+
+
+  const getBadgeVariant = (role: User['role']): 'default' | 'secondary' | 'outline' => {
     switch (role) {
       case 'Admin':
         return 'default';

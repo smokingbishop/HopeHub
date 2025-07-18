@@ -1,34 +1,36 @@
 
-export type Event = {
+
+export type MockEvent = {
   id: string;
   title: string;
   date: Date;
   description: string;
-  volunteers: Volunteer[];
+  volunteerIds: string[];
 };
 
-export type Volunteer = {
+export type MockUser = {
   id: string;
   name: string;
+  email: string;
   avatar: string;
   role: 'Admin' | 'Creator' | 'Member';
 };
 
-export type Message = {
+export type MockMessage = {
   id: string;
   senderId: string;
   text: string;
   timestamp: Date;
 }
 
-export type Conversation = {
+export type MockConversation = {
   id: string;
   name: string;
-  participants: Volunteer[];
-  messages: Message[];
+  participantIds: string[];
+  messages: MockMessage[];
 }
 
-export type Announcement = {
+export type MockAnnouncement = {
   id: string;
   title: string;
   message: string;
@@ -36,81 +38,80 @@ export type Announcement = {
   endDate: Date;
 };
 
-export const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' };
-
-export const volunteers: Volunteer[] = [
-  { id: '1', name: 'John Doe', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
-  { id: '2', name: 'Jane Smith', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Creator' },
-  { id: '3', name: 'Mike Johnson', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
-  { id: '4', name: 'Emily Davis', avatar: 'https://placehold.co/100x100.png?text=ED', role: 'Member' },
-  { id: '5', name: 'Chris Lee', avatar: 'https://placehold.co/100x100.png?text=CL', role: 'Member' },
+export const mockUsers: MockUser[] = [
+  { id: 'user-0', name: 'Admin User', email: 'admin@hopehub.com', avatar: 'https://placehold.co/100x100.png?text=AU', role: 'Admin' },
+  { id: 'user-1', name: 'John Doe', email: 'john@example.com', avatar: 'https://placehold.co/100x100.png?text=JD', role: 'Member' },
+  { id: 'user-2', name: 'Jane Smith', email: 'jane@example.com', avatar: 'https://placehold.co/100x100.png?text=JS', role: 'Creator' },
+  { id: 'user-3', name: 'Mike Johnson', email: 'mike@example.com', avatar: 'https://placehold.co/100x100.png?text=MJ', role: 'Member' },
+  { id: 'user-4', name: 'Emily Davis', email: 'emily@example.com', avatar: 'https://placehold.co/100x100.png?text=ED', role: 'Member' },
+  { id: 'user-5', name: 'Chris Lee', email: 'chris@example.com', avatar: 'https://placehold.co/100x100.png?text=CL', role: 'Member' },
 ];
 
-export const events: Event[] = [
+export const mockEvents: MockEvent[] = [
   {
     id: 'evt1',
     title: 'Community Food Drive',
     date: new Date(2024, 6, 20), // July 20, 2024
     description: 'Help us collect and distribute food to families in need. We will be stationed at the community center.',
-    volunteers: [volunteers[0], volunteers[2], volunteers[4]],
+    volunteerIds: ['user-1', 'user-3', 'user-5'],
   },
   {
     id: 'evt2',
     title: 'Charity Fun Run',
     date: new Date(2024, 7, 4), // August 4, 2024
     description: 'A 5k fun run to raise money for local shelters. Volunteers needed for registration, water stations, and finish line support.',
-    volunteers: [volunteers[1], volunteers[3]],
+    volunteerIds: ['user-2', 'user-4'],
   },
   {
     id: 'evt3',
     title: 'Park Cleanup Day',
     date: new Date(2024, 7, 10), // August 10, 2024
     description: 'Join us to help clean and beautify our local community park. Gloves and bags will be provided.',
-    volunteers: [volunteers[0], volunteers[1], volunteers[2], volunteers[3]],
+    volunteerIds: ['user-1', 'user-2', 'user-3', 'user-4'],
   },
     {
     id: 'evt4',
     title: 'Annual Gala Dinner',
     date: new Date(2024, 8, 14), // September 14, 2024
     description: 'Our biggest fundraising event of the year. Volunteers needed for setup, guest services, and teardown.',
-    volunteers: [],
+    volunteerIds: [],
   },
 ];
 
-export const conversations: Conversation[] = [
+export const mockConversations: MockConversation[] = [
   {
     id: 'convo1',
     name: 'Gala Planning Committee',
-    participants: [currentUser, volunteers[0], volunteers[3], volunteers[4]],
+    participantIds: ['user-0', 'user-1', 'user-4', 'user-5'],
     messages: [
-      { id: 'msg1', senderId: '1', text: "Hey team, let's finalize the catering options for the gala.", timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
-      { id: 'msg2', senderId: '4', text: "I've received quotes from three vendors. I'll share them in the documents tab.", timestamp: new Date(new Date().setHours(new Date().getHours() - 2)) },
-      { id: 'msg3', senderId: '0', text: "Perfect, thanks Emily! Let's review them by EOD tomorrow.", timestamp: new Date(new Date().setHours(new Date().getHours() - 1)) },
+      { id: 'msg1', senderId: 'user-1', text: "Hey team, let's finalize the catering options for the gala.", timestamp: new Date(new Date().setDate(new Date().getDate() - 1)) },
+      { id: 'msg2', senderId: 'user-4', text: "I've received quotes from three vendors. I'll share them in the documents tab.", timestamp: new Date(new Date().setHours(new Date().getHours() - 2)) },
+      { id: 'msg3', senderId: 'user-0', text: "Perfect, thanks Emily! Let's review them by EOD tomorrow.", timestamp: new Date(new Date().setHours(new Date().getHours() - 1)) },
     ],
   },
   {
     id: 'convo2',
     name: 'John Doe',
-    participants: [currentUser, volunteers[0]],
+    participantIds: ['user-0', 'user-1'],
     messages: [
-        { id: 'msg4', senderId: '1', text: "Hi, I had a question about the Fun Run route.", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
-        { id: 'msg5', senderId: '0', text: "Sure, what's up?", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
-        { id: 'msg6', senderId: '1', text: "Is the final turn onto Main Street or Elm Street?", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 30))},
-        { id: 'msg7', senderId: '0', text: "It's Main Street. The map in the event details is accurate.", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 5))},
+        { id: 'msg4', senderId: 'user-1', text: "Hi, I had a question about the Fun Run route.", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
+        { id: 'msg5', senderId: 'user-0', text: "Sure, what's up?", timestamp: new Date(new Date().setDate(new Date().getDate() - 2)) },
+        { id: 'msg6', senderId: 'user-1', text: "Is the final turn onto Main Street or Elm Street?", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 30))},
+        { id: 'msg7', senderId: 'user-0', text: "It's Main Street. The map in the event details is accurate.", timestamp: new Date(new Date().setMinutes(new Date().getMinutes() - 5))},
     ],
   },
     {
     id: 'convo3',
     name: 'Jane Smith',
-    participants: [currentUser, volunteers[1]],
+    participantIds: ['user-0', 'user-2'],
     messages: [
-        { id: 'msg8', senderId: '0', text: "Hi Jane, just confirming you're still able to help with the Park Cleanup.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
-        { id: 'msg9', senderId: '1', text: "Yes, I'll be there! Looking forward to it.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
+        { id: 'msg8', senderId: 'user-0', text: "Hi Jane, just confirming you're still able to help with the Park Cleanup.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
+        { id: 'msg9', senderId: 'user-2', text: "Yes, I'll be there! Looking forward to it.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
     ],
   }
 ];
 
-export const announcements: Announcement[] = [
+export const mockAnnouncements: MockAnnouncement[] = [
   {
     id: 'ann1',
     title: 'Annual Gala Dinner',

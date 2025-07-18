@@ -1,6 +1,7 @@
 
 'use client';
 
+import * as React from 'react';
 import {
   Card,
   CardContent,
@@ -18,14 +19,23 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { announcements, events } from '@/lib/mock-data';
+import type { Announcement, Event } from '@/lib/data-service';
+import { getActiveAnnouncements, getEvents } from '@/lib/data-service';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function DashboardPage() {
-    const activeAnnouncements = announcements.filter(ann => {
-    const now = new Date();
-    return ann.startDate <= now && ann.endDate >= now;
-  }).sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
+  const [activeAnnouncements, setActiveAnnouncements] = React.useState<Announcement[]>([]);
+  const [events, setEvents] = React.useState<Event[]>([]);
+
+  React.useEffect(() => {
+    async function fetchData() {
+      const announcements = await getActiveAnnouncements();
+      setActiveAnnouncements(announcements);
+      const allEvents = await getEvents();
+      setEvents(allEvents);
+    }
+    fetchData();
+  }, []);
 
   return (
     <AppLayout>

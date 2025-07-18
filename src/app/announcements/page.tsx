@@ -14,13 +14,14 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { announcements, type Announcement, currentUser } from '@/lib/mock-data';
+import { createAnnouncement, getActiveAnnouncements, getCurrentUser, type Announcement, type User } from '@/lib/data-service';
 import { CalendarIcon, Megaphone, Send } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format, formatDistanceToNow, parseISO } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { seedData } from '@/lib/seed';
 
 type NewAnnouncementState = {
   title: string;
@@ -31,15 +32,29 @@ type NewAnnouncementState = {
 
 export default function AnnouncementsPage() {
   const { toast } = useToast();
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [newAnnouncement, setNewAnnouncement] = React.useState<NewAnnouncementState>({
     title: '',
     message: '',
-    startDate: undefined,
+    startDate: new Date(),
     endDate: undefined,
   });
-  const [allAnnouncements, setAllAnnouncements] = React.useState(announcements);
+  const [allAnnouncements, setAllAnnouncements] = React.useState<Announcement[]>([]);
 
-  const canCreateAnnouncement = currentUser.role === 'Admin' || currentUser.role === 'Creator';
+  React.useEffect(() => {
+    async function fetchData() {
+      // Temporary: seed data if db is empty.
+      await seedData();
+
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      const announcements = await getActiveAnnouncements();
+      setAllAnnouncements(announcements.sort((a, b) => b.startDate.getTime() - a.startDate.getTime()));
+    }
+    fetchData();
+  }, []);
+
+  const canCreateAnnouncement = currentUser?.role === 'Admin' || currentUser?.role === 'Creator';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -50,7 +65,7 @@ export default function AnnouncementsPage() {
     setNewAnnouncement(prev => ({ ...prev, [field]: date }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newAnnouncement.title && newAnnouncement.message && newAnnouncement.startDate && newAnnouncement.endDate) {
        if (newAnnouncement.endDate < newAnnouncement.startDate) {
@@ -61,19 +76,26 @@ export default function AnnouncementsPage() {
         });
         return;
       }
-      const newEntry: Announcement = {
-        id: `ann${allAnnouncements.length + 1}`,
-        title: newAnnouncement.title,
-        message: newAnnouncement.message,
-        startDate: newAnnouncement.startDate,
-        endDate: newAnnouncement.endDate,
-      };
-      setAllAnnouncements([newEntry, ...allAnnouncements]);
-      setNewAnnouncement({ title: '', message: '', startDate: undefined, endDate: undefined });
-      toast({
-        title: 'Announcement Posted!',
-        description: 'Your announcement is now visible to all members.',
-      });
+      try {
+        const newEntry = await createAnnouncement({
+          title: newAnnouncement.title,
+          message: newAnnouncement.message,
+          startDate: newAnnouncement.startDate,
+          endDate: newAnnouncement.endDate,
+        });
+        setAllAnnouncements(prev => [newEntry, ...prev].sort((a,b) => b.startDate.getTime() - a.startDate.getTime()));
+        setNewAnnouncement({ title: '', message: '', startDate: new Date(), endDate: undefined });
+        toast({
+          title: 'Announcement Posted!',
+          description: 'Your announcement is now visible to all members.',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Could not create announcement. Please try again.',
+          variant: 'destructive'
+        })
+      }
     } else {
         toast({
             title: 'Incomplete Form',
@@ -126,7 +148,7 @@ export default function AnnouncementsPage() {
                       onChange={handleInputChange}
                     />
                   </div>
-                  <div className="space-y-4">
+                   <div className="space-y-4">
                     <div className="grid w-full gap-1.5">
                       <Label htmlFor="startDate">Start Date</Label>
                       <Popover>

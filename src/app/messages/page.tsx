@@ -14,7 +14,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { conversations as mockConversations, volunteers, type Conversation, type Volunteer } from '@/lib/mock-data';
+import { 
+  getConversationsForUser, 
+  createConversation, 
+  getUsers, 
+  getCurrentUser, 
+  addMessageToConversation,
+  type Conversation, 
+  type User,
+  type Message
+} from '@/lib/data-service';
 import { cn } from '@/lib/utils';
 import { Send, Users, ArrowLeft, PlusCircle } from 'lucide-react';
 import {
@@ -31,27 +40,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { seedData } from '@/lib/seed';
 
 function getInitials(name: string) {
     return name.split(' ').map((n) => n[0]).join('');
 }
 
 export default function MessagesPage() {
-  const [selectedConversation, setSelectedConversation] =
-    React.useState<Conversation | null>(mockConversations[0]);
-  const [conversations, setConversations] = React.useState<Conversation[]>(mockConversations);
+  const [selectedConversation, setSelectedConversation] = React.useState<Conversation | null>(null);
+  const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [isClient, setIsClient] = React.useState(false);
-
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [newConvoTitle, setNewConvoTitle] = React.useState('');
-  const [selectedMembers, setSelectedMembers] = React.useState<string[]>([]);
+  const [selectedMemberIds, setSelectedMemberIds] = React.useState<string[]>([]);
+  const [allUsers, setAllUsers] = React.useState<User[]>([]);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [messageText, setMessageText] = React.useState('');
+
   const { toast } = useToast();
 
   React.useEffect(() => {
     setIsClient(true);
+    async function fetchData() {
+      // Temporary: seed data if db is empty.
+      await seedData();
+
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+      if (user) {
+        const userConversations = await getConversationsForUser(user.id);
+        setConversations(userConversations);
+        if (userConversations.length > 0) {
+            setSelectedConversation(userConversations[0]);
+        }
+      }
+      const users = await getUsers();
+      setAllUsers(users);
+    }
+    fetchData();
   }, []);
-    
-  const getParticipant = (senderId: string): Volunteer | undefined => {
+
+  const getParticipant = (senderId: string): User | undefined => {
     return selectedConversation?.participants.find(p => p.id === senderId);
   }
 
@@ -61,54 +90,67 @@ export default function MessagesPage() {
   };
   
   const handleMemberSelect = (memberId: string) => {
-    setSelectedMembers(prev => 
+    setSelectedMemberIds(prev => 
       prev.includes(memberId) 
         ? prev.filter(id => id !== memberId)
         : [...prev, memberId]
     );
   };
 
-  const handleCreateConversation = () => {
-    if (selectedMembers.length === 0) {
+  const handleCreateConversation = async () => {
+    if (!currentUser) return;
+    
+    if (selectedMemberIds.length === 0) {
       toast({ title: "No members selected", description: "Please select at least one member.", variant: "destructive" });
       return;
     }
 
-    if (selectedMembers.length > 1 && !newConvoTitle) {
+    if (selectedMemberIds.length > 1 && !newConvoTitle) {
       toast({ title: "Title required", description: "Please provide a title for the group chat.", variant: "destructive" });
       return;
     }
     
-    const memberObjects = volunteers.filter(v => selectedMembers.includes(v.id));
-    const currentUser = volunteers.find(v => v.id === '0'); // Assuming current user
-    if (currentUser) {
-       memberObjects.push(currentUser);
-    }
+    const participantIds = [...selectedMemberIds, currentUser.id];
+    const memberObjects = allUsers.filter(u => participantIds.includes(u.id));
     
     let convoName = newConvoTitle;
-    if (selectedMembers.length === 1 && !newConvoTitle) {
-      convoName = memberObjects.find(m => m.id === selectedMembers[0])?.name || "New Chat";
+    if (selectedMemberIds.length === 1 && !newConvoTitle) {
+      convoName = allUsers.find(m => m.id === selectedMemberIds[0])?.name || "New Chat";
     }
 
-    const newConversation: Conversation = {
-      id: `convo${conversations.length + 1}`,
-      name: convoName,
-      participants: memberObjects,
-      messages: [{
-          id: `msg-start`,
-          senderId: '0',
-          text: `Started a new conversation: ${convoName}`,
-          timestamp: new Date(),
-      }],
-    };
+    try {
+        const newConversation = await createConversation(convoName, participantIds);
+        newConversation.participants = memberObjects; // Manually add participants for immediate UI update
 
-    setConversations([newConversation, ...conversations]);
-    setSelectedConversation(newConversation);
-    setNewConvoTitle('');
-    setSelectedMembers([]);
-    setIsDialogOpen(false);
-    toast({ title: "Conversation created!", description: `You can now start messaging with ${convoName}.` });
+        setConversations(prev => [newConversation, ...prev]);
+        setSelectedConversation(newConversation);
+        setNewConvoTitle('');
+        setSelectedMemberIds([]);
+        setIsDialogOpen(false);
+        toast({ title: "Conversation created!", description: `You can now start messaging with ${convoName}.` });
+    } catch (error) {
+        toast({ title: "Error", description: "Could not create conversation.", variant: 'destructive'})
+    }
   };
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !selectedConversation || !currentUser) return;
+    try {
+      const newMessage = await addMessageToConversation(selectedConversation.id, currentUser.id, messageText);
+      const updatedConversation = {
+        ...selectedConversation,
+        messages: [...selectedConversation.messages, newMessage]
+      };
+      setSelectedConversation(updatedConversation);
+
+      // Update the main list of conversations
+      setConversations(prev => prev.map(c => c.id === updatedConversation.id ? updatedConversation : c));
+      
+      setMessageText('');
+    } catch(error) {
+       toast({ title: "Error", description: "Could not send message.", variant: 'destructive'})
+    }
+  }
 
 
   return (
@@ -145,11 +187,11 @@ export default function MessagesPage() {
                     <Label>Members</Label>
                     <ScrollArea className="h-48 rounded-md border p-2">
                       <div className="space-y-2">
-                        {volunteers.filter(v => v.id !== '0').map(member => (
+                        {allUsers.filter(u => u.id !== currentUser?.id).map(member => (
                           <div key={member.id} className="flex items-center space-x-2">
                             <Checkbox 
                               id={`member-${member.id}`} 
-                              checked={selectedMembers.includes(member.id)}
+                              checked={selectedMemberIds.includes(member.id)}
                               onCheckedChange={() => handleMemberSelect(member.id)}
                             />
                             <Label htmlFor={`member-${member.id}`} className="font-normal flex items-center gap-2">
@@ -223,7 +265,7 @@ export default function MessagesPage() {
                   <div className="space-y-4">
                   {selectedConversation.messages.map((message, index) => {
                     const sender = getParticipant(message.senderId);
-                    const isCurrentUser = message.senderId === '0'; // Assuming '0' is current user
+                    const isCurrentUser = message.senderId === currentUser?.id;
                     return (
                         <div key={index} className={cn("flex items-end gap-2", isCurrentUser ? "justify-end" : "justify-start")}>
                            {!isCurrentUser && (
@@ -250,8 +292,16 @@ export default function MessagesPage() {
                     placeholder="Type a message..."
                     className="min-h-0 resize-none"
                     rows={1}
+                    value={messageText}
+                    onChange={(e) => setMessageText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
                   />
-                  <Button type="submit" size="icon">
+                  <Button type="submit" size="icon" onClick={handleSendMessage} disabled={!messageText.trim()}>
                     <Send className="h-4 w-4" />
                     <span className="sr-only">Send</span>
                   </Button>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -14,7 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { events, type Event } from '@/lib/mock-data';
+import { getEventById, type Event } from '@/lib/data-service';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, HeartHandshake } from 'lucide-react';
@@ -27,8 +28,11 @@ export default function EventDetailsPage() {
 
   React.useEffect(() => {
     if (params.id) {
-      const foundEvent = events.find((e) => e.id === params.id) || null;
-      setEvent(foundEvent);
+      const fetchEvent = async () => {
+        const foundEvent = await getEventById(params.id as string);
+        setEvent(foundEvent);
+      };
+      fetchEvent();
     }
   }, [params.id]);
 
@@ -45,7 +49,7 @@ export default function EventDetailsPage() {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-full">
-          <p>Event not found.</p>
+          <p>Loading event...</p>
         </div>
       </AppLayout>
     );
@@ -84,19 +88,20 @@ export default function EventDetailsPage() {
             <Separator />
             <div>
               <h3 className="text-xl font-semibold mb-4">
-                Volunteers ({event.volunteers.length})
+                Volunteers ({event.volunteerIds.length})
               </h3>
               <div className="flex flex-wrap gap-4">
-                {event.volunteers.map((v) => (
-                  <div key={v.id} className="flex flex-col items-center gap-2">
+                {/* This would require another fetch to get volunteer details based on IDs */}
+                {event.volunteerIds.length > 0 && event.volunteerIds.map((id) => (
+                  <div key={id} className="flex flex-col items-center gap-2">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={v.avatar} />
-                      <AvatarFallback>{v.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={`https://placehold.co/100x100.png?text=U`} />
+                      <AvatarFallback>U</AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-medium">{v.name}</span>
+                    <span className="text-sm font-medium">Volunteer</span>
                   </div>
                 ))}
-                {event.volunteers.length === 0 && (
+                {event.volunteerIds.length === 0 && (
                   <p className="text-sm text-muted-foreground">
                     No volunteers yet. Be the first!
                   </p>
