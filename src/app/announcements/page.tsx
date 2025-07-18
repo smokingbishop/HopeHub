@@ -1,0 +1,124 @@
+
+'use client';
+
+import * as React from 'react';
+import { AppLayout } from '@/components/app-layout';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { announcements, type Announcement } from '@/lib/mock-data';
+import { Megaphone, Send } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { formatDistanceToNow } from 'date-fns';
+
+export default function AnnouncementsPage() {
+  const { toast } = useToast();
+  const [newAnnouncement, setNewAnnouncement] = React.useState({ title: '', message: '' });
+  const [allAnnouncements, setAllAnnouncements] = React.useState(announcements);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewAnnouncement(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAnnouncement.title && newAnnouncement.message) {
+      const newEntry: Announcement = {
+        id: `ann${allAnnouncements.length + 1}`,
+        title: newAnnouncement.title,
+        message: newAnnouncement.message,
+        timestamp: new Date(),
+      };
+      setAllAnnouncements([newEntry, ...allAnnouncements]);
+      setNewAnnouncement({ title: '', message: '' });
+      toast({
+        title: 'Announcement Posted!',
+        description: 'Your announcement is now visible to all members.',
+      });
+    }
+  };
+
+  return (
+    <AppLayout>
+      <div className="flex-1 space-y-4 p-4 sm:p-8">
+        <div className="flex items-center justify-between space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Announcements</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Post a New Announcement</CardTitle>
+              <CardDescription>
+                This will be visible to all members on their dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid w-full items-center gap-1.5">
+                  <Label htmlFor="title">Title</Label>
+                  <Input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    placeholder="E.g., Upcoming Maintenance" 
+                    value={newAnnouncement.title}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="grid w-full gap-1.5">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea 
+                    placeholder="Type your message here." 
+                    id="message" 
+                    name="message"
+                    value={newAnnouncement.message}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <Button type="submit">
+                  <Send className="mr-2" />
+                  Post Announcement
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Announcements</CardTitle>
+              <CardDescription>
+                Here are the latest updates.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {allAnnouncements.slice(0, 5).map((announcement) => (
+                 <div key={announcement.id} className="flex items-start gap-4">
+                   <div className="bg-primary/10 p-2 rounded-full">
+                     <Megaphone className="h-5 w-5 text-primary" />
+                   </div>
+                   <div>
+                     <p className="font-medium">{announcement.title}</p>
+                     <p className="text-sm text-muted-foreground">
+                       {announcement.message}
+                     </p>
+                     <span className="text-xs text-muted-foreground">
+                       {formatDistanceToNow(announcement.timestamp, { addSuffix: true })}
+                     </span>
+                   </div>
+                 </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}

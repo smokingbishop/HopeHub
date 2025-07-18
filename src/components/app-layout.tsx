@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -11,7 +12,7 @@ import {
   Bell,
   MessageSquare,
   MoreVertical,
-  PanelLeft,
+  Megaphone,
 } from 'lucide-react';
 import { HopeHubLogo } from './icons';
 import { UserNav } from './user-nav';
@@ -32,6 +33,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Home },
     { href: '/events', label: 'Events', icon: Calendar },
+    { href: '/announcements', label: 'Announcements', icon: Megaphone },
     { href: '/messages', label: 'Messages', icon: MessageSquare },
     { href: '/members', label: 'Members', icon: Users },
   ];

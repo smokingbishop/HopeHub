@@ -1,3 +1,4 @@
+
 export type Event = {
   id: string;
   title: string;
@@ -25,6 +26,13 @@ export type Conversation = {
   participants: Volunteer[];
   messages: Message[];
 }
+
+export type Announcement = {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: Date;
+};
 
 const currentUser: Volunteer = { id: '0', name: 'Admin User', avatar: 'https://placehold.co/100x100.png?text=AU' };
 
@@ -98,4 +106,25 @@ export const conversations: Conversation[] = [
         { id: 'msg9', senderId: '1', text: "Yes, I'll be there! Looking forward to it.", timestamp: new Date(new Date().setDate(new Date().getDate() - 3)) },
     ],
   }
+];
+
+export const announcements: Announcement[] = [
+  {
+    id: 'ann1',
+    title: 'Annual Gala Dinner',
+    message: 'Tickets are now on sale for our biggest event of the year!',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
+  },
+  {
+    id: 'ann2',
+    title: 'Call for Volunteers',
+    message: 'We need your help for the upcoming charity run. Sign up in the events tab.',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 5)),
+  },
+  {
+    id: 'ann3',
+    title: 'New Member Welcome',
+    message: 'Please give a warm welcome to our newest members!',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 10)),
+  },
 ];
