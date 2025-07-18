@@ -1,6 +1,7 @@
 
+
 import { db } from './firebase';
-import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, addDoc, updateDoc, where, query, Timestamp, writeBatch, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { auth } from './firebase';
 
 // Data model interfaces
@@ -160,6 +161,16 @@ export async function updateMember(userId: string, data: Partial<Omit<User, 'id'
         await updateDoc(userRef, data);
     } catch(error) {
         console.error("Error updating member:", error);
+        throw error;
+    }
+}
+
+export async function deleteMember(userId: string): Promise<void> {
+    try {
+        const userRef = doc(db, 'users', userId);
+        await deleteDoc(userRef);
+    } catch(error) {
+        console.error("Error deleting member:", error);
         throw error;
     }
 }

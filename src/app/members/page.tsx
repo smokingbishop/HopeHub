@@ -8,10 +8,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getUsers, addMember, updateMember, type User } from '@/lib/data-service';
+import { getUsers, addMember, updateMember, deleteMember, type User } from '@/lib/data-service';
 import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,10 +24,21 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Pencil } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
@@ -58,6 +68,11 @@ function MembersPageContent() {
   // State for Edit Member dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   const [editingMember, setEditingMember] = React.useState<User | null>(null);
+
+  // State for Delete Member dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false);
+  const [deletingMember, setDeletingMember] = React.useState<User | null>(null);
+
 
   React.useEffect(() => {
     async function fetchData() {
@@ -150,6 +165,33 @@ function MembersPageContent() {
       });
     }
   };
+
+  // --- Delete Member Handlers ---
+  const openDeleteDialog = (member: User) => {
+    setDeletingMember(member);
+    setIsDeleteDialogOpen(true);
+  }
+
+  const handleDeleteMember = async () => {
+    if (!deletingMember) return;
+
+    try {
+      await deleteMember(deletingMember.id);
+      setAllMembers(prev => prev.filter(m => m.id !== deletingMember.id));
+      setIsDeleteDialogOpen(false);
+      setDeletingMember(null);
+      toast({
+        title: 'Member Deleted',
+        description: `${deletingMember.name} has been removed from the system.`
+      });
+    } catch (error) {
+      toast({
+        title: 'Error Deleting Member',
+        description: 'Could not delete the member. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  }
 
 
   const getBadgeVariant = (role: User['role']): 'default' | 'secondary' | 'outline' => {
@@ -259,9 +301,14 @@ function MembersPageContent() {
                     {member.role}
                   </Badge>
                    {canManageMembers && member.id !== currentUser?.id && (
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(member)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center">
+                      <Button variant="ghost" size="icon" onClick={() => openEditDialog(member)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => openDeleteDialog(member)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -326,6 +373,26 @@ function MembersPageContent() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        {/* Delete Member Alert Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                member's record from the database. This does not delete their authentication account.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeletingMember(null)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteMember}>
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
       </div>
   );
 }
