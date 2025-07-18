@@ -5,8 +5,8 @@
  * It is important that this file is imported before any other file that uses Genkit.
  */
 import { genkit } from 'genkit';
-import { firebase } from 'genkitx-firebase';
-import { googleAI } from 'genkitx-googleai';
+import { firebase } from '@genkit-ai/firebase';
+import { googleAI } from '@genkit-ai/googleai';
 
 // Initialize Genkit with the Google AI plugin.
 // This allows the application to use Google's AI models like Gemini.

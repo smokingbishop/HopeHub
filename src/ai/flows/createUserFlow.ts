@@ -14,9 +14,13 @@ import { User } from '@/lib/data-service';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-  });
+  try {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
+  } catch (e) {
+    console.error('Firebase admin initialization error', e);
+  }
 }
 
 const auth = admin.auth();
