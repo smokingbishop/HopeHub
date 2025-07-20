@@ -119,7 +119,6 @@ function MessagesPageContent() {
         setNewConvoTitle('');
         setSelectedMemberIds([]);
         setIsDialogOpen(false);
-        toast({ title: "Conversation created!", description: `You can now start messaging with ${convoName}.` });
     } catch (error) {
         toast({ title: "Error", description: "Could not create conversation.", variant: 'destructive'})
     }
